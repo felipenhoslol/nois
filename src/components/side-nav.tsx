@@ -1,5 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { openCommandPalette } from "./command-palette";
+import { useArchive } from "@/lib/archive-context";
 
 const tabs = [
   { to: "/", label: "Início", icon: "⌂" },
@@ -11,6 +12,7 @@ const tabs = [
 
 export function SideNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { user } = useArchive();
   return (
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-border bg-paper/70 px-4 py-8 md:flex">
       <div className="px-2">
@@ -57,7 +59,7 @@ export function SideNav() {
       </Link>
 
       <p className="mt-auto px-2 font-mono text-[0.55rem] uppercase tracking-[0.2em] text-muted-foreground">
-        guardado no seu aparelho
+        {user ? "sincronizado na nuvem ♡" : "guardado no seu aparelho"}
       </p>
     </aside>
   );

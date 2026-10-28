@@ -5,6 +5,8 @@ import { THEMES, type CustomTheme, type Settings } from "@/lib/settings";
 import { useArchive } from "@/lib/archive-context";
 import { Field, SectionTitle, inputClass } from "@/components/archive-ui";
 import { PageHeader } from "@/components/page-header";
+import { SyncSection } from "@/components/sync-section";
+import { parseBackup } from "@/lib/sync";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -12,10 +14,14 @@ export const Route = createFileRoute("/settings")({
       { title: "Configurações — Archive" },
       {
         name: "description",
-        content: "Escolha temas, personalize cores estilo MySpace, ajuste privacidade e exporte seus dados.",
+        content:
+          "Escolha temas, personalize cores estilo MySpace, ajuste privacidade e exporte seus dados.",
       },
       { property: "og:title", content: "Configurações — Archive" },
-      { property: "og:description", content: "Aparência, temas MySpace, privacidade e dados do seu arquivo." },
+      {
+        property: "og:description",
+        content: "Aparência, temas MySpace, privacidade e dados do seu arquivo.",
+      },
     ],
   }),
   component: SettingsPage,
@@ -61,7 +67,7 @@ const DEFAULT_CUSTOM_THEME: CustomTheme = {
 };
 
 function SettingsPage() {
-  const { settings, updateSettings, items, resetAll } = useArchive();
+  const { settings, updateSettings, items, resetAll, replaceAll, user } = useArchive();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<"presets" | "myspace">(
     settings.useCustomTheme ? "myspace" : "presets",
@@ -95,23 +101,21 @@ function SettingsPage() {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (event) => {
+      let backup: ReturnType<typeof parseBackup>;
       try {
-        const data = JSON.parse(event.target?.result as string);
-        if (data.items && Array.isArray(data.items)) {
-          localStorage.setItem("archive.items.v1", JSON.stringify(data.items));
-          if (data.settings) {
-            localStorage.setItem("archive.settings.v1", JSON.stringify(data.settings));
-          }
-          toast.success("Backup importado com sucesso! Recarregando...");
-          setTimeout(() => window.location.reload(), 1000);
-        } else {
-          toast.error("Formato de backup inválido.");
-        }
+        backup = parseBackup(JSON.parse(event.target?.result as string));
       } catch {
-        toast.error("Erro ao ler o arquivo JSON.");
+        toast.error("Esse arquivo não parece um backup do Archive.");
+        return;
       }
+      if (!confirm(`Restaurar ${backup.items.length} registros? Isso substitui o arquivo atual.`)) {
+        return;
+      }
+      replaceAll(backup.items, backup.settings);
+      toast.success("Backup restaurado ♡");
     };
     reader.readAsText(file);
+    e.target.value = "";
   }
 
   return (
@@ -200,9 +204,7 @@ function SettingsPage() {
                 >
                   <span className="font-medium block">{t.label}</span>
                   <span className="mt-1 block font-mono text-[0.55rem] uppercase tracking-[0.16em] text-muted-foreground">
-                    {settings.theme === t.key && !settings.useCustomTheme
-                      ? "em uso ✓"
-                      : "aplicar"}
+                    {settings.theme === t.key && !settings.useCustomTheme ? "em uso ✓" : "aplicar"}
                   </span>
                 </button>
               ))}
@@ -497,9 +499,13 @@ function SettingsPage() {
           Apagar todos os dados do arquivo
         </button>
         <p className="px-1 text-xs text-muted-foreground font-mono">
-          Suas informações ficam salvas de forma 100% privada neste aparelho.
+          {user
+            ? "Suas informações ficam neste aparelho e na sua conta. Apagar aqui apaga na nuvem também."
+            : "Suas informações ficam salvas de forma 100% privada neste aparelho."}
         </p>
       </section>
+
+      <SyncSection />
     </main>
   );
 }
