@@ -79,7 +79,10 @@ export function Player({ onClose }: { onClose: () => void }) {
     );
     const first = f[0];
     const last = f[f.length - 1];
-    if (e.shiftKey && document.activeElement === first) {
+    if (
+      e.shiftKey &&
+      (document.activeElement === first || document.activeElement === rootRef.current)
+    ) {
       e.preventDefault();
       last?.focus();
     } else if (!e.shiftKey && document.activeElement === last) {
@@ -94,8 +97,9 @@ export function Player({ onClose }: { onClose: () => void }) {
     <section
       ref={rootRef}
       onKeyDown={onKeyDown}
-      aria-label="Player"
-      className="relative rounded-3xl border border-border bg-card p-5 text-foreground shadow-2xl"
+      // Clicks on the cover/title focus the section, so Escape and Tab still reach onKeyDown.
+      tabIndex={-1}
+      className="relative rounded-3xl outline-none border border-border bg-card p-5 text-foreground shadow-2xl"
     >
       <button
         onClick={onClose}

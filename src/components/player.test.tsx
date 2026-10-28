@@ -95,3 +95,17 @@ it("Tab wraps from the last control back to the first", async () => {
   expect(document.activeElement).toBe(focusable[0]);
   await act(async () => root.unmount());
 });
+
+it("clicking non-focusable content keeps keyboard handling inside the player", async () => {
+  const onClose = vi.fn();
+  const host = document.createElement("div");
+  document.body.append(host);
+  const root = createRoot(host);
+  await act(async () => root.render(<Player onClose={onClose} />));
+  const section = host.querySelector("section")!;
+  section.focus(); // what a click on the cover/title does once the section is focusable
+  expect(document.activeElement).toBe(section);
+  section.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  expect(onClose).toHaveBeenCalledTimes(1);
+  await act(async () => root.unmount());
+});
