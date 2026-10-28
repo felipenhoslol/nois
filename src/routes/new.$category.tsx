@@ -89,24 +89,28 @@ function NewItem() {
       <form onSubmit={submit} className="mt-4 grid gap-4">
         {meta.key === "music" && <MusicPicker onPick={save} />}
 
-        <Field label="Título">
-          <input
-            autoFocus={meta.key !== "music"}
-            className={inputClass}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="o que você quer guardar?"
-          />
-        </Field>
+        {meta.key !== "music" && (
+          <>
+            <Field label="Título">
+              <input
+                autoFocus
+                className={inputClass}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="o que você quer guardar?"
+              />
+            </Field>
 
-        <Field label={meta.fields?.[0]?.label ?? "Detalhe"}>
-          <input
-            className={inputClass}
-            value={subtitle}
-            onChange={(e) => setSubtitle(e.target.value)}
-            placeholder="autor, marca ou complemento"
-          />
-        </Field>
+            <Field label={meta.fields?.[0]?.label ?? "Detalhe"}>
+              <input
+                className={inputClass}
+                value={subtitle}
+                onChange={(e) => setSubtitle(e.target.value)}
+                placeholder="autor, marca ou complemento"
+              />
+            </Field>
+          </>
+        )}
 
         {/* Media Picker for visual photos / polaroids and audio */}
         {meta.key !== "music" && <MediaPicker imageUrl={imageUrl} onImageChange={setImageUrl} />}
@@ -134,13 +138,33 @@ function NewItem() {
           <summary className="min-h-11 cursor-pointer text-base font-medium">Mais detalhes</summary>
           <div className="mt-3 grid gap-4">
             {meta.key === "music" ? (
-              <MediaPicker
-                imageUrl={imageUrl}
-                onImageChange={setImageUrl}
-                audioUrl={audioUrl}
-                onAudioChange={setAudioUrl}
-                showAudio
-              />
+              <>
+                <Field label="Título">
+                  <input
+                    className={inputClass}
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="o que você quer guardar?"
+                  />
+                </Field>
+
+                <Field label={meta.fields?.[0]?.label ?? "Detalhe"}>
+                  <input
+                    className={inputClass}
+                    value={subtitle}
+                    onChange={(e) => setSubtitle(e.target.value)}
+                    placeholder="autor, marca ou complemento"
+                  />
+                </Field>
+
+                <MediaPicker
+                  imageUrl={imageUrl}
+                  onImageChange={setImageUrl}
+                  audioUrl={audioUrl}
+                  onAudioChange={setAudioUrl}
+                  showAudio
+                />
+              </>
             ) : null}
 
             {DATE_PLACE_CATEGORIES.includes(meta.key) ? (
@@ -221,12 +245,20 @@ function NewItem() {
               <span>{favorite ? "♥ marcado como favorito" : "♡ marcar como favorito"}</span>
               <span className="text-base">{favorite ? "★" : "☆"}</span>
             </button>
+
+            {meta.key === "music" && (
+              <button type="submit" className="press btn-primary">
+                Guardar no arquivo ♡
+              </button>
+            )}
           </div>
         </details>
 
-        <button type="submit" className="press btn-primary mt-2">
-          Guardar no arquivo ♡
-        </button>
+        {meta.key !== "music" && (
+          <button type="submit" className="press btn-primary mt-2">
+            Guardar no arquivo ♡
+          </button>
+        )}
       </form>
     </main>
   );

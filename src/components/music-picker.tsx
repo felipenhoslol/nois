@@ -65,9 +65,16 @@ export function MusicPicker({ onPick }: { onPick: (t: TrackResult) => void }) {
     };
   }, [term]);
 
+  // The picker lives inside the page <form>: Enter must never submit it.
+  const onEnter = (e: React.KeyboardEvent) => {
+    if (e.key !== "Enter" || (e.target as HTMLElement).tagName !== "INPUT") return;
+    e.preventDefault();
+    if (chosen?.title.trim()) onPick(chosen);
+  };
+
   if (chosen) {
     return (
-      <div className="surface-row grid gap-3">
+      <div className="surface-row grid gap-3" onKeyDown={onEnter}>
         <div className="flex items-center gap-3">
           <Cover src={chosen.artwork} size="h-16 w-16" />
           <div className="grid min-w-0 flex-1 gap-2">
@@ -107,7 +114,7 @@ export function MusicPicker({ onPick }: { onPick: (t: TrackResult) => void }) {
   }
 
   return (
-    <div>
+    <div onKeyDown={onEnter}>
       <input
         autoFocus
         className={`${inputClass} !min-h-14`}
