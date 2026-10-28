@@ -1,11 +1,28 @@
 // YouTube URL parser & IFrame API helper for Archive Turntable
 
+// The subset of the YouTube IFrame player API this app uses.
+export type YTPlayer = {
+  loadVideoById(id: string): void;
+  playVideo(): void;
+  pauseVideo(): void;
+  seekTo(seconds: number, allowSeekAhead: boolean): void;
+  setVolume(volume: number): void;
+  setPlaybackRate(rate: number): void;
+  getCurrentTime(): number;
+  getDuration(): number;
+};
+
+export type YTPlayerEvent = { target: YTPlayer; data: number };
+
 declare global {
   interface Window {
-    YT: any;
+    YT: { Player: new (el: string, opts: unknown) => YTPlayer } | undefined;
     onYouTubeIframeAPIReady: (() => void) | undefined;
   }
 }
+
+// 45 RPM plays a bit faster, like a real turntable.
+export const rpmToRate = (rpm: 33 | 45): number => (rpm === 45 ? 1.25 : 1);
 
 /**
  * Extracts YouTube Video ID from any standard YouTube URL
@@ -52,7 +69,10 @@ export function isYouTubeUrl(url?: string | null): boolean {
 /**
  * Gets the best available thumbnail URL for a YouTube video
  */
-export function getYouTubeThumbnail(videoId: string, quality: "max" | "hq" | "default" = "hq"): string {
+export function getYouTubeThumbnail(
+  videoId: string,
+  quality: "max" | "hq" | "default" = "hq",
+): string {
   if (quality === "max") {
     return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
   }
