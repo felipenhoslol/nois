@@ -1,7 +1,8 @@
 import { usePlayer } from "@/lib/player-context";
-import { catMeta, type Item } from "@/lib/archive";
+import { catMeta } from "@/lib/categories";
+import type { Item } from "@/lib/items";
 
-export function Turntable({ track, onClose }: { track?: Item | null; onClose?: () => void }) {
+export function Turntable({ track, onClose }: { track?: Item | null | undefined; onClose?: () => void }) {
   const {
     currentTrack,
     isPlaying,

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CATEGORIES } from "@/lib/archive";
+import { CATEGORIES } from "@/lib/categories";
 import { useArchive } from "@/lib/archive-context";
 import { EmptyDrawer, ItemCard, SectionTitle } from "@/components/archive-ui";
 import { PageHeader } from "@/components/page-header";

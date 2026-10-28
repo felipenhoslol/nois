@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CATEGORIES } from "@/lib/archive";
+import { CATEGORIES } from "@/lib/categories";
 import { PageHeader } from "@/components/page-header";
 
 export const Route = createFileRoute("/add")({

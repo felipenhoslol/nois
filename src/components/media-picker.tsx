@@ -9,9 +9,9 @@ export function MediaPicker({
   onAudioChange,
   showAudio = false,
 }: {
-  imageUrl?: string;
+  imageUrl?: string | undefined;
   onImageChange: (url: string) => void;
-  audioUrl?: string;
+  audioUrl?: string | undefined;
   onAudioChange?: (url: string) => void;
   showAudio?: boolean;
 }) {

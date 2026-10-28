@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { THEMES, type CustomTheme, type Settings } from "@/lib/archive";
+import { THEMES, type CustomTheme, type Settings } from "@/lib/settings";
 import { useArchive } from "@/lib/archive-context";
 import { Field, SectionTitle, inputClass } from "@/components/archive-ui";
 import { PageHeader } from "@/components/page-header";

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { catMeta, type Category } from "@/lib/archive";
+import { catMeta, type Category } from "@/lib/categories";
 import { useArchive } from "@/lib/archive-context";
 import { usePlayer } from "@/lib/player-context";
 import { Chip, Field, HeartButton, inputClass } from "@/components/archive-ui";

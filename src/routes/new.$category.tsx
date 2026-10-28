@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { catMeta, type Category } from "@/lib/archive";
+import { catMeta, DATE_PLACE_CATEGORIES, type Category } from "@/lib/categories";
+import { parseTags } from "@/lib/items";
 import { useArchive } from "@/lib/archive-context";
 import { Field, inputClass } from "@/components/archive-ui";
 import { PageHeader } from "@/components/page-header";
@@ -57,10 +58,7 @@ function NewItem() {
       favorite,
       image: imageUrl || undefined,
       audioUrl: audioUrl || undefined,
-      tags: tags
-        .split(/[,\s]+/)
-        .map((t) => t.replace(/^#/, "").trim())
-        .filter(Boolean),
+      tags: parseTags(tags),
     });
     toast.success(`Guardado na gaveta de ${meta.label} ♡`);
     navigate({ to: "/item/$id", params: { id: item.id } });
@@ -128,7 +126,7 @@ function NewItem() {
           </Field>
         ) : null}
 
-        {meta.key === "memory" || meta.key === "promise" || meta.key === "said" || meta.key === "place" ? (
+        {DATE_PLACE_CATEGORIES.includes(meta.key) ? (
           <div className="grid grid-cols-2 gap-3">
             <Field label="Data">
               <input

@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { Item } from "./archive";
+import type { Item } from "./items";
 import { extractYouTubeId, loadYouTubeIframeAPI } from "./youtube";
 
 export type PlayerState = {

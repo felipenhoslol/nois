@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
-import { catMeta, type Item } from "@/lib/archive";
+import { catMeta } from "@/lib/categories";
+import type { Item } from "@/lib/items";
 import { useArchive } from "@/lib/archive-context";
 import { usePlayer } from "@/lib/player-context";
 

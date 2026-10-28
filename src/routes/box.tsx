@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { catMeta, type Item } from "@/lib/archive";
+import { catMeta } from "@/lib/categories";
+import type { Item } from "@/lib/items";
 import { useArchive } from "@/lib/archive-context";
 import { EmptyDrawer } from "@/components/archive-ui";
 import { PageHeader } from "@/components/page-header";
