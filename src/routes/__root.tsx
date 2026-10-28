@@ -94,7 +94,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&family=Caveat:wght@500;600&family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=VT323&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap",
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
@@ -146,7 +146,7 @@ function RootComponent() {
             <SideNav />
 
             {/* Main Application Frame */}
-            <div className="grain flex-1 min-w-0 max-w-xl mx-auto pb-28">
+            <div className="grain flex-1 min-w-0 max-w-[640px] mx-auto px-5 pb-32">
               <Outlet />
             </div>
 

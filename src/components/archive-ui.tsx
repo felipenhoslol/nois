@@ -7,10 +7,8 @@ import { usePlayer } from "@/lib/player-context";
 
 export function SectionTitle({ children, action }: { children: ReactNode; action?: ReactNode }) {
   return (
-    <div className="mb-2 flex items-end justify-between gap-3">
-      <h2 className="font-mono text-[0.7rem] uppercase tracking-[0.18em] text-muted-foreground">
-        {children}
-      </h2>
+    <div className="mb-3 flex items-end justify-between gap-3">
+      <h2 className="text-xl font-semibold">{children}</h2>
       {action}
     </div>
   );
@@ -128,14 +126,24 @@ export function ItemCard({ item, index = 0 }: { item: Item; index?: number }) {
   );
 }
 
-export function EmptyDrawer({ text, kaomoji }: { text: string; kaomoji?: string }) {
+export function EmptyDrawer({
+  text,
+  kaomoji,
+  action,
+}: {
+  text: string;
+  kaomoji?: string;
+  action?: ReactNode;
+}) {
   return (
-    <div className="card-object flex flex-col items-center gap-2 px-6 py-10 text-center bg-secondary/40">
-      <div className="text-2xl font-mono text-muted-foreground">{kaomoji || "( ˘ω˘ ) ✦"}</div>
-      <p className="font-hand text-xl text-foreground">{text}</p>
-      <p className="max-w-[16rem] text-xs text-muted-foreground">
-        Toque em “+” para guardar a primeira coisa nesta gaveta.
-      </p>
+    <div className="surface-row flex flex-col items-center gap-3 px-6 py-10 text-center">
+      <div className="text-2xl text-muted-foreground">{kaomoji || "( ˘ω˘ )"}</div>
+      <p className="text-base">{text}</p>
+      {action ?? (
+        <Link to="/add" className="press btn-primary">
+          Adicionar
+        </Link>
+      )}
     </div>
   );
 }
@@ -167,7 +175,7 @@ export function RetroClock() {
 export function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+      <span className="mb-1.5 block text-sm font-medium text-muted-foreground">
         {label}
       </span>
       {children}
@@ -176,7 +184,7 @@ export function Field({ label, children }: { label: string; children: ReactNode 
 }
 
 export const inputClass =
-  "w-full rounded-[var(--radius-sm)] border border-border bg-paper px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/60 focus:border-primary";
+  "h-12 w-full rounded-2xl border border-border bg-paper px-3 text-base outline-none placeholder:text-muted-foreground/60 focus:border-primary";
 
 // Placeholder rows while the archive loads from storage, so the empty state doesn't flash.
 export function ItemCardSkeleton({ count = 3 }: { count?: number }) {

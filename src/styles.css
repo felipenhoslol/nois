@@ -29,11 +29,7 @@
   --color-ring: var(--primary);
   --color-paper: var(--paper);
   --color-ink: var(--foreground);
-  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  --font-hand: "Caveat", cursive;
-  --font-pixel: "VT323", monospace;
-  --font-serif: "Playfair Display", Georgia, serif;
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
 }
 
 
@@ -48,6 +44,8 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.5;
     overscroll-behavior-y: none;
   }
   h1,
@@ -165,14 +163,19 @@
 
 /* SHARED BUTTONS */
 @utility btn-primary {
-  border-radius: var(--radius);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 52px;
+  border-radius: 16px;
   background: var(--primary);
   color: var(--primary-foreground);
-  padding: 0.75rem 1rem;
-  font-weight: 500;
+  padding: 0 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
   text-align: center;
   cursor: pointer;
-  box-shadow: 0 6px 16px -8px color-mix(in oklab, var(--primary) 70%, transparent);
   &:hover {
     filter: brightness(1.05);
   }
@@ -180,6 +183,22 @@
     opacity: 0.6;
     cursor: default;
   }
+}
+@utility surface-row {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  min-height: 64px;
+  padding: 12px;
+}
+@utility chip {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 0.875rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 14px;
 }
 @utility btn-ghost {
   border-radius: var(--radius);
