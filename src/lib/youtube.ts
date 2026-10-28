@@ -45,7 +45,7 @@ export function extractYouTubeId(url?: string | null): string | null {
 
   // Regex covering youtube.com, youtu.be, music.youtube.com
   const patterns = [
-    /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|music\.youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/i,
+    /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|music\.youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/i,
     /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/i,
   ];
 
