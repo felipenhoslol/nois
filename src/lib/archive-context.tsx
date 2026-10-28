@@ -14,11 +14,14 @@ import { DEFAULT_SETTINGS, loadSettings, saveSettings, type Settings } from "./s
 import { supabase } from "./supabase";
 import {
   createDebouncedUpserter,
-  deleteRemoteItem,
+  deleteRemoteItems,
   fetchRemote,
+  loadSyncState,
   mergeItems,
   saveRemoteSettings,
+  saveSyncState,
   upsertItems,
+  type SyncState,
 } from "./sync";
 import { applyTheme } from "./theme";
 
@@ -40,6 +43,11 @@ const ArchiveContext = createContext<Ctx | null>(null);
 
 const cloudError = () => toast.error("não consegui salvar na nuvem, ficou guardado aqui ♡");
 const byId = (list: Item[]) => new Map(list.map((i) => [i.id, i]));
+const without = (list: string[], ids: Iterable<string>) => {
+  const drop = new Set(ids);
+  return list.filter((id) => !drop.has(id));
+};
+const withAll = (list: string[], ids: Iterable<string>) => [...new Set([...list, ...ids])];
 
 export function ArchiveProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<Item[]>([]);
@@ -55,6 +63,13 @@ export function ArchiveProvider({ children }: { children: ReactNode }) {
   const syncedItems = useRef<Map<string, Item> | null>(null);
   const syncedSettings = useRef<Settings | null>(null);
   const upserter = useRef<ReturnType<typeof createDebouncedUpserter> | null>(null);
+  // Persisted record of what the cloud has confirmed (see SyncState). null = not syncing.
+  const syncState = useRef<SyncState | null>(null);
+  const updateSyncState = (fn: (s: SyncState) => SyncState) => {
+    if (!syncState.current) return;
+    syncState.current = fn(syncState.current);
+    saveSyncState(syncState.current);
+  };
 
   useEffect(() => {
     setItems(hasStoredItems() ? loadItems() : seedItems());
@@ -84,24 +99,59 @@ export function ArchiveProvider({ children }: { children: ReactNode }) {
       currentUser = user?.id ?? null;
 
       if (!user) {
-        void upserter.current?.flushNow().catch(cloudError);
+        // Unsent edits stay marked dirty on this device and go up on the next sign-in.
         upserter.current = null;
         syncedItems.current = null;
         syncedSettings.current = null;
+        syncState.current = null;
         setSession(null);
         return;
       }
 
       const userId = user.id;
-      upserter.current = createDebouncedUpserter((batch) => upsertItems(userId, batch));
+      const stillSignedIn = () => currentUser === userId;
+      let local = itemsRef.current;
+      let st = loadSyncState();
+      if (st.userId && st.userId !== userId) {
+        // Another account used this device: don't hand its items to this one.
+        local = [];
+        st = { userId, synced: [], dirty: [], deleted: [] };
+      }
+      syncState.current = { ...st, userId };
+      saveSyncState(syncState.current);
+
+      upserter.current = createDebouncedUpserter(async (batch) => {
+        await upsertItems(userId, batch).catch((e: unknown) => {
+          cloudError();
+          throw e;
+        });
+        // Clean only items that weren't edited again while the request was in flight.
+        const current = byId(itemsRef.current);
+        const done = batch.filter((i) => current.get(i.id) === i).map((i) => i.id);
+        updateSyncState((x) => ({
+          ...x,
+          dirty: without(x.dirty, done),
+          synced: withAll(x.synced, done),
+        }));
+      });
+
       // Defer: supabase-js warns against awaiting its calls inside this callback.
       setTimeout(async () => {
         try {
           const remote = await fetchRemote();
-          const { merged, toUpload } = mergeItems(itemsRef.current, remote.items);
+          if (!stillSignedIn()) return;
+          const { merged, toUpload, toDelete } = mergeItems(local, remote.items, st);
           syncedItems.current = byId(merged);
           setItems(merged);
           await upsertItems(userId, toUpload);
+          await deleteRemoteItems(toDelete);
+          if (!stillSignedIn()) return;
+          updateSyncState((x) => ({
+            ...x,
+            dirty: [],
+            deleted: [],
+            synced: merged.map((i) => i.id),
+          }));
 
           if (remote.settings) {
             const next = { ...DEFAULT_SETTINGS, ...remote.settings };
@@ -111,8 +161,9 @@ export function ArchiveProvider({ children }: { children: ReactNode }) {
             syncedSettings.current = settingsRef.current;
             await saveRemoteSettings(userId, settingsRef.current);
           }
-          setSession({ id: userId, email: user.email ?? "" });
+          if (stillSignedIn()) setSession({ id: userId, email: user.email ?? "" });
         } catch (e) {
+          if (!stillSignedIn()) return;
           console.warn("Sync failed", e);
           syncedItems.current = null;
           toast.error("não consegui sincronizar agora, seus dados continuam aqui ♡");
@@ -131,11 +182,39 @@ export function ArchiveProvider({ children }: { children: ReactNode }) {
   // Mirror item changes: changed objects are upserted (debounced), missing ids are deleted.
   useEffect(() => {
     const prev = syncedItems.current;
-    if (!session || !prev || !upserter.current) return;
+    const u = upserter.current;
+    if (!session || !prev || !u) return;
     const next = byId(items);
-    for (const item of items) if (prev.get(item.id) !== item) upserter.current.push(item);
-    for (const id of prev.keys()) if (!next.has(id)) deleteRemoteItem(id).catch(cloudError);
+    const changed = items.filter((i) => prev.get(i.id) !== i);
+    const removed = [...prev.keys()].filter((id) => !next.has(id));
     syncedItems.current = next;
+    if (changed.length === 0 && removed.length === 0) return;
+
+    // Mark first, so an edit or delete that never reaches the cloud survives a reload.
+    updateSyncState((x) => ({
+      ...x,
+      dirty: without(
+        withAll(
+          x.dirty,
+          changed.map((i) => i.id),
+        ),
+        removed,
+      ),
+      deleted: withAll(x.deleted, removed),
+    }));
+    changed.forEach((i) => u.push(i));
+    removed.forEach((id) => u.drop(id));
+    if (removed.length > 0) {
+      deleteRemoteItems(removed)
+        .then(() =>
+          updateSyncState((x) => ({
+            ...x,
+            deleted: without(x.deleted, removed),
+            synced: without(x.synced, removed),
+          })),
+        )
+        .catch(cloudError);
+    }
   }, [items, session]);
 
   // Mirror settings, debounced.

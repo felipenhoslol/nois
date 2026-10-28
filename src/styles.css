@@ -81,19 +81,30 @@
 [data-border-style="none"] .card-object,
 [data-border-style="none"] .polaroid {
   border-color: transparent !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
 }
 
 /* MYSPACE / RETRO 90s WALLPAPER PATTERNS */
 [data-wallpaper="dots"] {
-  background-image: radial-gradient(color-mix(in oklab, var(--color-foreground) 12%, transparent) 1px, transparent 1px);
+  background-image: radial-gradient(
+    color-mix(in oklab, var(--color-foreground) 12%, transparent) 1px,
+    transparent 1px
+  );
   background-size: 16px 16px;
 }
 
 [data-wallpaper="grid"] {
-  background-image: 
-    linear-gradient(to right, color-mix(in oklab, var(--color-foreground) 8%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in oklab, var(--color-foreground) 8%, transparent) 1px, transparent 1px);
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in oklab, var(--color-foreground) 8%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--color-foreground) 8%, transparent) 1px,
+      transparent 1px
+    );
   background-size: 20px 20px;
 }
 
@@ -113,18 +124,48 @@
 }
 
 [data-wallpaper="stars"] {
-  background-image: radial-gradient(2px 2px at 20px 30px, color-mix(in oklab, var(--color-foreground) 30%, transparent), rgba(0,0,0,0)),
-                    radial-gradient(2px 2px at 40px 70px, color-mix(in oklab, var(--color-primary) 50%, transparent), rgba(0,0,0,0)),
-                    radial-gradient(1px 1px at 90px 40px, color-mix(in oklab, var(--color-foreground) 40%, transparent), rgba(0,0,0,0)),
-                    radial-gradient(2px 2px at 160px 120px, color-mix(in oklab, var(--color-primary) 30%, transparent), rgba(0,0,0,0));
+  background-image:
+    radial-gradient(
+      2px 2px at 20px 30px,
+      color-mix(in oklab, var(--color-foreground) 30%, transparent),
+      rgba(0, 0, 0, 0)
+    ),
+    radial-gradient(
+      2px 2px at 40px 70px,
+      color-mix(in oklab, var(--color-primary) 50%, transparent),
+      rgba(0, 0, 0, 0)
+    ),
+    radial-gradient(
+      1px 1px at 90px 40px,
+      color-mix(in oklab, var(--color-foreground) 40%, transparent),
+      rgba(0, 0, 0, 0)
+    ),
+    radial-gradient(
+      2px 2px at 160px 120px,
+      color-mix(in oklab, var(--color-primary) 30%, transparent),
+      rgba(0, 0, 0, 0)
+    );
   background-repeat: repeat;
   background-size: 200px 200px;
 }
 
 [data-wallpaper="sparkles"] {
-  background-image: radial-gradient(circle, color-mix(in oklab, var(--color-primary) 25%, transparent) 10%, transparent 11%),
-                    radial-gradient(circle at bottom left, color-mix(in oklab, var(--color-accent) 20%, transparent) 5%, transparent 6%),
-                    radial-gradient(circle at bottom right, color-mix(in oklab, var(--color-foreground) 15%, transparent) 5%, transparent 6%);
+  background-image:
+    radial-gradient(
+      circle,
+      color-mix(in oklab, var(--color-primary) 25%, transparent) 10%,
+      transparent 11%
+    ),
+    radial-gradient(
+      circle at bottom left,
+      color-mix(in oklab, var(--color-accent) 20%, transparent) 5%,
+      transparent 6%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      color-mix(in oklab, var(--color-foreground) 15%, transparent) 5%,
+      transparent 6%
+    );
   background-size: 32px 32px;
 }
 
@@ -134,7 +175,6 @@
   background-size: auto;
   background-position: center top;
 }
-
 
 /* THEME 1 — CASSETE VINTAGE (default) */
 :root,

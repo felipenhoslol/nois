@@ -5,17 +5,73 @@ import { supabase } from "./supabase";
 
 const byNewest = (x: Item, y: Item) => y.createdAt.localeCompare(x.createdAt);
 
+/** What this device knows about the cloud, per signed-in user. Survives reloads. */
+export type SyncState = {
+  userId: string | null;
+  synced: string[]; // ids known to exist in the cloud
+  dirty: string[]; // ids edited here and not yet confirmed by the cloud
+  deleted: string[]; // ids deleted here and not yet confirmed by the cloud
+};
+export const SYNC_KEY = "archive.sync.v1";
+const EMPTY_SYNC: SyncState = { userId: null, synced: [], dirty: [], deleted: [] };
+
+export function loadSyncState(): SyncState {
+  try {
+    return {
+      ...EMPTY_SYNC,
+      ...(JSON.parse(localStorage.getItem(SYNC_KEY) ?? "{}") as Partial<SyncState>),
+    };
+  } catch {
+    return { ...EMPTY_SYNC };
+  }
+}
+
+export function saveSyncState(s: SyncState): void {
+  try {
+    localStorage.setItem(SYNC_KEY, JSON.stringify(s));
+  } catch (err) {
+    console.warn("Could not save sync state", err);
+  }
+}
+
 /**
- * Joins local and cloud items by id. Cloud wins on conflict; local-only items get uploaded.
- * Example items (`seed-*`) are dropped when the cloud already has data, so a second device
- * doesn't duplicate them.
+ * Joins local and cloud items by id.
+ * - Edited here but not confirmed (dirty): local wins and is uploaded again.
+ * - Deleted here but not confirmed: stays deleted and the delete is retried.
+ * - Known to the cloud before but gone now: it was deleted on another device, so drop it.
+ * - Never synced: uploaded, except example items (`seed-*`) when the cloud already has data.
+ * - Otherwise the cloud version wins.
  */
-export function mergeItems(local: Item[], remote: Item[]): { merged: Item[]; toUpload: Item[] } {
-  const remoteIds = new Set(remote.map((i) => i.id));
-  const toUpload = local.filter(
-    (i) => !remoteIds.has(i.id) && !(remote.length > 0 && i.id.startsWith("seed-")),
-  );
-  return { merged: [...remote, ...toUpload].sort(byNewest), toUpload };
+export function mergeItems(
+  local: Item[],
+  remote: Item[],
+  state: Pick<SyncState, "synced" | "dirty" | "deleted"> = EMPTY_SYNC,
+): { merged: Item[]; toUpload: Item[]; toDelete: string[] } {
+  const synced = new Set(state.synced);
+  const dirty = new Set(state.dirty);
+  const deleted = new Set(state.deleted);
+  const remoteById = new Map(remote.map((i) => [i.id, i]));
+  const merged = new Map<string, Item>();
+  const toUpload: Item[] = [];
+
+  for (const r of remote) if (!deleted.has(r.id)) merged.set(r.id, r);
+  for (const l of local) {
+    if (deleted.has(l.id)) continue;
+    if (dirty.has(l.id)) {
+      merged.set(l.id, l);
+      toUpload.push(l);
+    } else if (remoteById.has(l.id) || synced.has(l.id)) {
+      continue;
+    } else if (!(remote.length > 0 && l.id.startsWith("seed-"))) {
+      merged.set(l.id, l);
+      toUpload.push(l);
+    }
+  }
+  return {
+    merged: [...merged.values()].sort(byNewest),
+    toUpload,
+    toDelete: [...deleted],
+  };
 }
 
 const backupSchema = z.object({
@@ -43,6 +99,7 @@ export function parseBackup(json: unknown): { items: Item[]; settings?: Partial<
 }
 
 // Collects item writes and sends only the latest version of each, once things go quiet.
+// A failed send stays queued; drop() forgets an item that was deleted meanwhile.
 export function createDebouncedUpserter(flush: (items: Item[]) => Promise<void>, ms = 800) {
   const pending = new Map<string, Item>();
   let timer: ReturnType<typeof setTimeout> | null = null;
@@ -52,8 +109,8 @@ export function createDebouncedUpserter(flush: (items: Item[]) => Promise<void>,
     timer = null;
     if (pending.size === 0) return;
     const batch = [...pending.values()];
-    pending.clear();
     await flush(batch);
+    for (const i of batch) if (pending.get(i.id) === i) pending.delete(i.id);
   };
 
   return {
@@ -62,6 +119,10 @@ export function createDebouncedUpserter(flush: (items: Item[]) => Promise<void>,
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => void flushNow().catch(() => {}), ms);
     },
+    drop(id: string) {
+      pending.delete(id);
+    },
+    isPending: (id: string) => pending.has(id),
     flushNow,
   };
 }
@@ -107,8 +168,9 @@ export async function upsertItems(userId: string, items: Item[]): Promise<void> 
   if (error) throw error;
 }
 
-export async function deleteRemoteItem(id: string): Promise<void> {
-  const { error } = await supabase!.from("items").delete().eq("id", id);
+export async function deleteRemoteItems(ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+  const { error } = await supabase!.from("items").delete().in("id", ids);
   if (error) throw error;
 }
 
