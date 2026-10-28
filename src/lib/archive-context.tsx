@@ -16,6 +16,7 @@ import {
   createDebouncedUpserter,
   deleteRemoteItems,
   fetchRemote,
+  isMember,
   loadSyncState,
   mergeItems,
   saveRemoteSettings,
@@ -93,6 +94,41 @@ export function ArchiveProvider({ children }: { children: ReactNode }) {
     const client = supabase;
     let currentUser: string | null = null;
 
+    // Fetch the cloud, merge with what's on this device, push what's missing on either side.
+    const pull = async (userId: string, local: Item[], st: SyncState, firstTime: boolean) => {
+      const remote = await fetchRemote();
+      if (currentUser !== userId) return;
+      const { merged, toUpload, toDelete } = mergeItems(local, remote.items, st);
+      syncedItems.current = byId(merged);
+      setItems(merged);
+      await upsertItems(userId, toUpload);
+      await deleteRemoteItems(toDelete);
+      if (currentUser !== userId) return;
+      updateSyncState((x) => ({
+        ...x,
+        dirty: without(
+          x.dirty,
+          toUpload.map((i) => i.id),
+        ),
+        deleted: without(x.deleted, toDelete),
+        synced: withAll(
+          without(x.synced, toDelete),
+          merged.map((i) => i.id),
+        ),
+      }));
+
+      // Take the shared settings unless there's a local change still waiting to be saved.
+      const localPending = syncedSettings.current !== settingsRef.current;
+      if (remote.settings && (firstTime || !localPending)) {
+        const next = { ...DEFAULT_SETTINGS, ...remote.settings };
+        syncedSettings.current = next;
+        setSettings(next);
+      } else if (firstTime) {
+        syncedSettings.current = settingsRef.current;
+        await saveRemoteSettings(settingsRef.current);
+      }
+    };
+
     const { data } = client.auth.onAuthStateChange((_event, s) => {
       const user = s?.user ?? null;
       if ((user?.id ?? null) === currentUser) return;
@@ -138,32 +174,16 @@ export function ArchiveProvider({ children }: { children: ReactNode }) {
       // Defer: supabase-js warns against awaiting its calls inside this callback.
       setTimeout(async () => {
         try {
-          const remote = await fetchRemote();
-          if (!stillSignedIn()) return;
-          const { merged, toUpload, toDelete } = mergeItems(local, remote.items, st);
-          syncedItems.current = byId(merged);
-          setItems(merged);
-          await upsertItems(userId, toUpload);
-          await deleteRemoteItems(toDelete);
-          if (!stillSignedIn()) return;
-          updateSyncState((x) => ({
-            ...x,
-            dirty: [],
-            deleted: [],
-            synced: merged.map((i) => i.id),
-          }));
-
-          if (remote.settings) {
-            const next = { ...DEFAULT_SETTINGS, ...remote.settings };
-            syncedSettings.current = next;
-            setSettings(next);
-          } else {
-            syncedSettings.current = settingsRef.current;
-            await saveRemoteSettings(userId, settingsRef.current);
+          if (!(await isMember())) {
+            if (currentUser !== userId) return;
+            toast.error("Essa conta não tem acesso a este arquivo.");
+            await client.auth.signOut();
+            return;
           }
-          if (stillSignedIn()) setSession({ id: userId, email: user.email ?? "" });
+          await pull(userId, local, st, true);
+          if (currentUser === userId) setSession({ id: userId, email: user.email ?? "" });
         } catch (e) {
-          if (!stillSignedIn()) return;
+          if (currentUser !== userId) return;
           console.warn("Sync failed", e);
           syncedItems.current = null;
           toast.error("não consegui sincronizar agora, seus dados continuam aqui ♡");
@@ -171,11 +191,23 @@ export function ArchiveProvider({ children }: { children: ReactNode }) {
       }, 0);
     });
 
+    // Coming back to the tab: bring in what the other person changed meanwhile.
+    const onVisible = () => {
+      const userId = currentUser;
+      const st = syncState.current;
+      if (document.visibilityState !== "visible" || !userId || !st || !syncedItems.current) return;
+      pull(userId, itemsRef.current, st, false).catch((e: unknown) =>
+        console.warn("Pull failed", e),
+      );
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
     const flush = () => void upserter.current?.flushNow().catch(() => {});
     window.addEventListener("beforeunload", flush);
     return () => {
       data.subscription.unsubscribe();
       window.removeEventListener("beforeunload", flush);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, [ready]);
 
@@ -222,7 +254,7 @@ export function ArchiveProvider({ children }: { children: ReactNode }) {
     if (!session || !syncedSettings.current || syncedSettings.current === settings) return;
     const t = setTimeout(() => {
       syncedSettings.current = settings;
-      saveRemoteSettings(session.id, settings).catch(cloudError);
+      saveRemoteSettings(settings).catch(cloudError);
     }, 800);
     return () => clearTimeout(t);
   }, [settings, session]);

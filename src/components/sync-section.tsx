@@ -16,11 +16,12 @@ export function SyncSection() {
     setSending(true);
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
-      options: { emailRedirectTo: `${window.location.origin}/settings` },
+      // Only the two existing accounts can sign in; the link never creates a new one.
+      options: { emailRedirectTo: `${window.location.origin}/settings`, shouldCreateUser: false },
     });
     setSending(false);
     if (error) {
-      toast.error("Não consegui enviar o link. Confere o e-mail e tenta de novo.");
+      toast.error("Esse e-mail não tem acesso a este arquivo. Confere se digitou certo ♡");
       return;
     }
     setSent(true);
@@ -73,8 +74,8 @@ export function SyncSection() {
             {sending ? "enviando…" : "receber link de acesso"}
           </button>
           <p className="text-xs text-muted-foreground">
-            Sem senha: você recebe um link por e-mail. Assim o arquivo aparece em todos os seus
-            aparelhos.
+            Sem senha: você recebe um link por e-mail. O arquivo é de vocês dois e aparece em todos
+            os aparelhos.
           </p>
         </form>
       )}

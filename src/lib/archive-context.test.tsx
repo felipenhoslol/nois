@@ -20,6 +20,7 @@ const sync = vi.hoisted(() => ({
   upsertItems: vi.fn(),
   deleteRemoteItems: vi.fn(),
   saveRemoteSettings: vi.fn(),
+  isMember: vi.fn(),
 }));
 vi.mock("./sync", async (orig) => ({ ...(await orig<typeof import("./sync")>()), ...sync }));
 
@@ -49,8 +50,10 @@ async function mount() {
   });
 }
 
+const signOut = vi.fn();
 const fakeAuth = () => ({
   auth: {
+    signOut,
     onAuthStateChange: (cb: (e: string, s: unknown) => void) => {
       auth.cb = cb;
       return { data: { subscription: { unsubscribe() {} } } };
@@ -68,6 +71,8 @@ beforeEach(() => {
   localStorage.clear();
   vi.resetModules();
   Object.values(sync).forEach((f) => f.mockReset().mockResolvedValue(undefined));
+  sync.isMember.mockResolvedValue(true);
+  signOut.mockReset().mockResolvedValue({ error: null });
   supabaseMock.value = null;
   auth.cb = null;
 });
@@ -86,6 +91,7 @@ it("on sign-in merges cloud items without uploading seeds, then debounces edits"
   vi.useFakeTimers();
   supabaseMock.value = {
     auth: {
+      signOut,
       onAuthStateChange: (cb: (e: string, s: unknown) => void) => {
         auth.cb = cb;
         return { data: { subscription: { unsubscribe() {} } } };
@@ -186,4 +192,35 @@ it("signing out during the first merge leaves no session", async () => {
   await act(async () => auth.cb!("SIGNED_OUT", null));
   await act(async () => release({ items: [remoteItem], settings: null }));
   expect(ctx.user).toBeNull();
+});
+
+it("an account that isn't one of the two members is signed out with a message", async () => {
+  vi.useFakeTimers();
+  supabaseMock.value = fakeAuth();
+  sync.isMember.mockResolvedValue(false);
+  await mount();
+  await signIn("intruso");
+  expect(signOut).toHaveBeenCalled();
+  expect(sync.fetchRemote).not.toHaveBeenCalled();
+  expect(ctx.user).toBeNull();
+});
+
+it("coming back to the tab pulls what the other person changed", async () => {
+  vi.useFakeTimers();
+  supabaseMock.value = fakeAuth();
+  sync.fetchRemote.mockResolvedValue({ items: [remoteItem], settings: null });
+  await mount();
+  await signIn("u1");
+  const fromPartner: Item = {
+    ...remoteItem,
+    id: "r2",
+    title: "dela",
+    createdAt: "2026-03-01T00:00:00.000Z",
+  };
+  sync.fetchRemote.mockResolvedValue({ items: [remoteItem, fromPartner], settings: null });
+  await act(async () => {
+    document.dispatchEvent(new Event("visibilitychange"));
+    await vi.advanceTimersByTimeAsync(1);
+  });
+  expect(ctx.items.map((i) => i.id)).toEqual(["r2", "r1"]);
 });
