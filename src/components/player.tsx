@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type KeyboardEvent } from "react";
 import { Music, Pause, Play, SkipBack, SkipForward, Volume2, X } from "lucide-react";
 import { usePlayer } from "@/lib/player-context";
 import { useArchive } from "@/lib/archive-context";
@@ -57,16 +57,43 @@ export function Player({ onClose }: { onClose: () => void }) {
     };
   }, [spotify]);
 
+  // Modal focus: move in on open, give back to the opener on close.
+  const rootRef = useRef<HTMLElement>(null);
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+    const opener = document.activeElement as HTMLElement | null;
+    rootRef.current?.querySelector("button")?.focus();
+    return () => opener?.focus();
+  }, []);
+
+  // On the player's own DOM, so an overlay on top (Ctrl+K) keeps its Escape. The Spotify
+  // iframe sits outside this DOM (never reparented), so it is not in the Tab cycle.
+  const onKeyDown = (e: KeyboardEvent) => {
+    if (e.key === "Escape") {
+      e.stopPropagation();
+      onClose();
+      return;
+    }
+    if (e.key !== "Tab" || !rootRef.current) return;
+    const f = rootRef.current.querySelectorAll<HTMLElement>(
+      "button:not(:disabled), input:not(:disabled)",
+    );
+    const first = f[0];
+    const last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last?.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first?.focus();
+    }
+  };
 
   const cover = currentTrack?.image;
 
   return (
     <section
+      ref={rootRef}
+      onKeyDown={onKeyDown}
       aria-label="Player"
       className="relative rounded-3xl border border-border bg-card p-5 text-foreground shadow-2xl"
     >

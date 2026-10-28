@@ -1,3 +1,6 @@
+// @vitest-environment jsdom
+import { act } from "react";
+import { createRoot } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import { beforeEach, expect, it, vi } from "vitest";
 import { Player } from "./player";
@@ -46,4 +49,49 @@ it("volume and RPM are disabled for Spotify and a slot is reserved for the embed
   const html = renderToString(<Player onClose={() => {}} />);
   expect(html).toMatch(/aria-label="Volume"[^>]*disabled/);
   expect(html).toMatch(/data-spotify-slot/);
+});
+
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+it("moves focus into the player on open and back to the opener on close", async () => {
+  const opener = document.createElement("button");
+  const host = document.createElement("div");
+  document.body.append(opener, host);
+  opener.focus();
+  const root = createRoot(host);
+  await act(async () => root.render(<Player onClose={() => {}} />));
+  expect(document.activeElement?.getAttribute("aria-label")).toBe("Fechar player");
+  await act(async () => root.unmount());
+  expect(document.activeElement).toBe(opener);
+});
+
+it("Escape from a control inside the player closes it", async () => {
+  const onClose = vi.fn();
+  const host = document.createElement("div");
+  document.body.append(host);
+  const root = createRoot(host);
+  await act(async () => root.render(<Player onClose={onClose} />));
+  const seekBar = host.querySelector<HTMLInputElement>('[aria-label="Posição da música"]')!;
+  seekBar.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  expect(onClose).toHaveBeenCalledTimes(1);
+  // An overlay outside the player (e.g. the Ctrl+K palette) owns its own Escape.
+  document.body.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  expect(onClose).toHaveBeenCalledTimes(1);
+  await act(async () => root.unmount());
+});
+
+it("Tab wraps from the last control back to the first", async () => {
+  const host = document.createElement("div");
+  document.body.append(host);
+  const root = createRoot(host);
+  await act(async () => root.render(<Player onClose={() => {}} />));
+  const focusable = host.querySelectorAll<HTMLElement>(
+    "button:not(:disabled), input:not(:disabled)",
+  );
+  focusable[focusable.length - 1]!.focus();
+  const ev = new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true });
+  document.activeElement!.dispatchEvent(ev);
+  expect(ev.defaultPrevented).toBe(true);
+  expect(document.activeElement).toBe(focusable[0]);
+  await act(async () => root.unmount());
 });
