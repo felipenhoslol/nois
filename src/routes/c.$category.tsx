@@ -5,7 +5,7 @@ import { useArchive } from "@/lib/archive-context";
 import { usePlayer } from "@/lib/player-context";
 import { EmptyDrawer, ItemCard, ItemCardSkeleton, SectionTitle } from "@/components/archive-ui";
 import { PageHeader } from "@/components/page-header";
-import { Turntable } from "@/components/turntable";
+import { NowPlaying } from "@/components/now-playing";
 
 export const Route = createFileRoute("/c/$category")({
   head: () => ({
@@ -23,10 +23,9 @@ function CategoryPage() {
   const { category } = Route.useParams();
   const meta = catMeta(category);
   const { items, ready } = useArchive();
-  const { playTrack, currentTrack } = usePlayer();
+  const { playTrack } = usePlayer();
   const [view, setView] = useState<"list" | "grid" | "cassette">("list");
   const [status, setStatus] = useState<string>("");
-  const [showTurntable, setShowTurntable] = useState(category === "music");
 
   const list = items
     .filter((i) => i.category === meta.key)
@@ -46,27 +45,7 @@ function CategoryPage() {
         backLabel="← arquivo"
       />
 
-      {/* Embedded Turntable for Music category */}
-      {category === "music" && (
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
-              Aparelho de som analógico
-            </span>
-            <button
-              onClick={() => setShowTurntable(!showTurntable)}
-              className="label-chip press bg-card"
-            >
-              {showTurntable ? "ocultar toca-discos" : "mostrar toca-discos 🎵"}
-            </button>
-          </div>
-          {showTurntable && (
-            <div className="anim-in">
-              <Turntable track={currentTrack || list[0]} />
-            </div>
-          )}
-        </div>
-      )}
+      {category === "music" && <NowPlaying />}
 
       {/* Filters and View mode switches */}
       <div className="mt-4 flex flex-wrap items-center gap-1.5">

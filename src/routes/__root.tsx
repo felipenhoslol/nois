@@ -19,7 +19,7 @@ import { PlayerProvider, usePlayer } from "../lib/player-context";
 import { BottomNav } from "../components/bottom-nav";
 import { SideNav } from "../components/side-nav";
 import { MiniPlayer } from "../components/mini-player";
-import { Turntable } from "../components/turntable";
+import { Player } from "../components/player";
 import { CommandPalette } from "../components/command-palette";
 
 function NotFoundComponent() {
@@ -121,14 +121,21 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
-function TurntableModal() {
+function PlayerModal() {
   const { isTurntableOpen, closeTurntable } = usePlayer();
   if (!isTurntableOpen) return null;
 
+  // No enter animation: the Spotify embed is laid over a slot measured on mount.
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm anim-box">
-      <div className="w-full max-w-lg">
-        <Turntable onClose={closeTurntable} />
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Player"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4"
+      onClick={(e) => e.target === e.currentTarget && closeTurntable()}
+    >
+      <div className="my-auto w-full max-w-[400px]">
+        <Player onClose={closeTurntable} />
       </div>
     </div>
   );
@@ -146,7 +153,7 @@ function RootComponent() {
             <SideNav />
 
             {/* Main Application Frame */}
-            <div className="grain flex-1 min-w-0 max-w-[640px] mx-auto px-5 pb-32">
+            <div className="grain flex-1 min-w-0 max-w-[640px] mx-auto px-5 pb-40">
               <Outlet />
             </div>
 
@@ -158,8 +165,7 @@ function RootComponent() {
 
             <CommandPalette />
 
-            {/* Turntable Modal */}
-            <TurntableModal />
+            <PlayerModal />
 
             {/* Toast Notifications */}
             <Toaster position="top-center" />
@@ -182,21 +188,8 @@ function RootComponent() {
             </div>
 
             {/* Persistent Spotify embed: never unmounted or moved (that reloads the iframe).
-                Task 7 shows it in the big player by flipping data-visible. */}
-            <div
-              id="archive-spotify-player-container"
-              data-visible="false"
-              style={{
-                position: "fixed",
-                bottom: 0,
-                left: 0,
-                width: 300,
-                height: 152,
-                opacity: 0,
-                pointerEvents: "none",
-              }}
-              aria-hidden="true"
-            >
+                The big player shows it by flipping data-visible; position lives in styles.css. */}
+            <div id="archive-spotify-player-container" data-visible="false" aria-hidden="true">
               <div id="archive-spotify-player" />
             </div>
           </div>

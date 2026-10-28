@@ -32,7 +32,6 @@
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
 }
 
-
 @layer base {
   * {
     border-color: var(--color-border);
@@ -148,14 +147,54 @@
   animation: spin-disc 1.33s linear infinite;
 }
 
+@keyframes vinyl-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* Pausing freezes the angle: the animation stays, only its play state flips. */
+@utility vinyl {
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, transparent 30%, rgb(255 255 255 / 0.06) 31%, transparent 33%),
+    repeating-radial-gradient(circle, #111 0 2px, #1e1e1e 2px 4px);
+  box-shadow: 0 10px 24px rgb(0 0 0 / 0.3);
+  animation: vinyl-spin 4s linear infinite;
+  animation-play-state: paused;
+  &[data-spinning="true"] {
+    animation-play-state: running;
+  }
+}
+
+/* Spotify embed: always mounted; the big player lays it over its slot (never reparented). */
+#archive-spotify-player-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 300px;
+  height: 152px;
+  opacity: 0;
+  pointer-events: none;
+}
+#archive-spotify-player-container[data-visible="true"] {
+  top: var(--slot-top);
+  left: var(--slot-left);
+  width: var(--slot-w);
+  bottom: auto;
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 60;
+}
+
 /* REDUCED MOTION / ANIMATION TOGGLE */
 [data-anim="false"] * {
   animation: none !important;
   transition: none !important;
 }
 
+/* The vinyl only spins after a tap on play, so it keeps spinning here (spec call 6). */
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *:not(.vinyl) {
     animation: none !important;
     transition: none !important;
   }
