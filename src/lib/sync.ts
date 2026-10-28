@@ -66,6 +66,23 @@ export function createDebouncedUpserter(flush: (items: Item[]) => Promise<void>,
   };
 }
 
+/**
+ * Uploads a photo/audio to the `media` bucket under the user's folder and returns its public URL.
+ * Returns null when sync isn't configured or nobody is signed in (caller keeps the data URL).
+ */
+export async function uploadMedia(file: Blob, ext: string): Promise<string | null> {
+  if (!supabase) return null;
+  const { data } = await supabase.auth.getSession();
+  const userId = data.session?.user.id;
+  if (!userId) return null;
+  const path = `${userId}/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage
+    .from("media")
+    .upload(path, file, file.type ? { contentType: file.type } : {});
+  if (error) throw error;
+  return supabase.storage.from("media").getPublicUrl(path).data.publicUrl;
+}
+
 // --- Cloud calls. Only used with a signed-in session; RLS limits every query to that user. ---
 
 export async function fetchRemote(): Promise<{ items: Item[]; settings: Settings | null }> {
