@@ -32,7 +32,7 @@ function NotFoundComponent() {
         <div className="mt-6">
           <Link
             to="/"
-            className="press inline-flex rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+            className="press btn-primary inline-flex text-sm"
           >
             Voltar ao arquivo
           </Link>
@@ -62,13 +62,13 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
               router.invalidate();
               reset();
             }}
-            className="press rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+            className="press btn-primary text-sm"
           >
             Tentar de novo
           </button>
           <a
             href="/"
-            className="press rounded-md border border-border bg-card px-4 py-2 text-sm font-medium"
+            className="press btn-ghost"
           >
             Início
           </a>

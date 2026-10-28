@@ -16,13 +16,15 @@ create table public.settings (
 alter table public.items enable row level security;
 alter table public.settings enable row level security;
 
-create policy "own items" on public.items for all
+create policy "own items" on public.items for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-create policy "own settings" on public.settings for all
+create policy "own settings" on public.settings for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
 
 -- Public bucket so <img src> works directly; paths are <user_id>/<random>.<ext>.
-insert into storage.buckets (id, name, public) values ('media', 'media', true);
+-- 10 MB cap and images/audio only, so the bucket can't become free file hosting.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('media', 'media', true, 10485760, array['image/*', 'audio/*']);
 
 create policy "upload own folder" on storage.objects for insert to authenticated
   with check (bucket_id = 'media' and (storage.foldername(name))[1] = auth.uid()::text);

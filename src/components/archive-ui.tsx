@@ -5,13 +5,7 @@ import type { Item } from "@/lib/items";
 import { useArchive } from "@/lib/archive-context";
 import { usePlayer } from "@/lib/player-context";
 
-export function SectionTitle({
-  children,
-  action,
-}: {
-  children: ReactNode;
-  action?: ReactNode;
-}) {
+export function SectionTitle({ children, action }: { children: ReactNode; action?: ReactNode }) {
   return (
     <div className="mb-2 flex items-end justify-between gap-3">
       <h2 className="font-mono text-[0.7rem] uppercase tracking-[0.18em] text-muted-foreground">
@@ -36,7 +30,7 @@ export function HeartButton({ item }: { item: Item }) {
         e.stopPropagation();
         toggleFavorite(item.id);
       }}
-      className="press shrink-0 rounded-full px-1.5 py-1 text-base leading-none"
+      className="press -m-2.5 grid h-11 w-11 shrink-0 place-items-center rounded-full text-base leading-none"
     >
       <span className={item.favorite ? "text-primary" : "text-muted-foreground"}>
         {item.favorite ? "♥" : "♡"}
@@ -62,7 +56,9 @@ export function ItemCard({ item, index = 0 }: { item: Item; index?: number }) {
         {item.image ? (
           <div
             className={`size-11 shrink-0 overflow-hidden rounded-[var(--radius-sm)] border border-border bg-secondary shadow-sm transition-all ${
-              isThisPlaying ? "rounded-full ring-2 ring-primary animate-[spin-disc_3s_linear_infinite]" : ""
+              isThisPlaying
+                ? "rounded-full ring-2 ring-primary animate-[spin-disc_3s_linear_infinite]"
+                : ""
             }`}
           >
             <img src={item.image} alt={item.title} className="size-full object-cover" />
@@ -70,7 +66,9 @@ export function ItemCard({ item, index = 0 }: { item: Item; index?: number }) {
         ) : (
           <div
             className={`grid size-11 shrink-0 place-items-center rounded-[var(--radius-sm)] border border-border bg-secondary text-sm font-mono relative transition-all ${
-              isThisPlaying ? "rounded-full border-primary ring-2 ring-primary/30 animate-[spin-disc_3s_linear_infinite] bg-neutral-900 text-primary-foreground" : ""
+              isThisPlaying
+                ? "rounded-full border-primary ring-2 ring-primary/30 animate-[spin-disc_3s_linear_infinite] bg-neutral-900 text-primary-foreground"
+                : ""
             }`}
           >
             {item.category === "music" && isThisPlaying ? (
@@ -133,9 +131,7 @@ export function ItemCard({ item, index = 0 }: { item: Item; index?: number }) {
 export function EmptyDrawer({ text, kaomoji }: { text: string; kaomoji?: string }) {
   return (
     <div className="card-object flex flex-col items-center gap-2 px-6 py-10 text-center bg-secondary/40">
-      <div className="text-2xl font-mono text-muted-foreground">
-        {kaomoji || "( ˘ω˘ ) ✦"}
-      </div>
+      <div className="text-2xl font-mono text-muted-foreground">{kaomoji || "( ˘ω˘ ) ✦"}</div>
       <p className="font-hand text-xl text-foreground">{text}</p>
       <p className="max-w-[16rem] text-xs text-muted-foreground">
         Toque em “+” para guardar a primeira coisa nesta gaveta.
@@ -143,7 +139,6 @@ export function EmptyDrawer({ text, kaomoji }: { text: string; kaomoji?: string 
     </div>
   );
 }
-
 
 export function RetroClock() {
   const [now, setNow] = useState<Date | null>(null);
@@ -169,13 +164,7 @@ export function RetroClock() {
   );
 }
 
-export function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
+export function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="block">
       <span className="mb-1 block font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
@@ -188,3 +177,20 @@ export function Field({
 
 export const inputClass =
   "w-full rounded-[var(--radius-sm)] border border-border bg-paper px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/60 focus:border-primary";
+
+// Placeholder rows while the archive loads from storage, so the empty state doesn't flash.
+export function ItemCardSkeleton({ count = 3 }: { count?: number }) {
+  return (
+    <div className="grid gap-2" aria-busy="true" aria-label="carregando">
+      {Array.from({ length: count }, (_, n) => (
+        <div key={n} className="card-object flex items-center gap-3 p-3">
+          <div className="h-12 w-12 shrink-0 animate-pulse rounded bg-muted" />
+          <div className="grid flex-1 gap-2">
+            <div className="h-3 w-2/3 animate-pulse rounded bg-muted" />
+            <div className="h-2.5 w-1/3 animate-pulse rounded bg-muted" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

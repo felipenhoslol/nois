@@ -222,7 +222,7 @@ function NewItem() {
 
         <button
           type="submit"
-          className="press mt-2 rounded-[var(--radius)] bg-primary px-4 py-3 font-medium text-primary-foreground shadow-lg hover:brightness-105"
+          className="press btn-primary mt-2"
         >
           Guardar no arquivo ♡
         </button>

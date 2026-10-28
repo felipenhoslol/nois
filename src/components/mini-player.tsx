@@ -78,7 +78,7 @@ export function MiniPlayer() {
             togglePlay();
           }}
           aria-label={isPlaying ? "Pausar" : "Tocar"}
-          className="press size-9 shrink-0 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-mono font-bold shadow-md cursor-pointer hover:brightness-110"
+          className="press size-11 shrink-0 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-mono font-bold shadow-md cursor-pointer hover:brightness-110"
         >
           {isPlaying ? "❚❚" : "▶"}
         </button>

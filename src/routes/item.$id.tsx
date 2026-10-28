@@ -226,7 +226,7 @@ function ItemDetail() {
             toast.success("Ideia de presente criada a partir deste comentário!");
             navigate({ to: "/item/$id", params: { id: gift.id } });
           }}
-          className="press mt-3 w-full rounded-[var(--radius)] bg-primary px-4 py-3 font-medium text-primary-foreground shadow cursor-pointer"
+          className="press btn-primary mt-3 w-full"
         >
           (づ｡◕‿◕｡)づ Transformar em ideia de presente
         </button>

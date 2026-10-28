@@ -69,7 +69,7 @@ export function SyncSection() {
           <button
             type="submit"
             disabled={sending}
-            className="press rounded-[var(--radius)] bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground disabled:opacity-60"
+            className="press btn-primary text-sm"
           >
             {sending ? "enviando…" : "receber link de acesso"}
           </button>

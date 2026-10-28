@@ -417,3 +417,48 @@
   transition: none !important;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* SHARED BUTTONS */
+@utility btn-primary {
+  border-radius: var(--radius);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 6px 16px -8px color-mix(in oklab, var(--primary) 70%, transparent);
+  &:hover {
+    filter: brightness(1.05);
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+@utility btn-ghost {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--card);
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* KEYBOARD FOCUS */
+:where(a, button, input, textarea, select, [role="option"]):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Grid children may shrink below their content, so truncated titles don't widen the page on phones. */
+:where(.grid) > * {
+  min-width: 0;
+}
