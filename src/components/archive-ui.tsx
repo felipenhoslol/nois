@@ -184,7 +184,7 @@ export function Field({ label, children }: { label: string; children: ReactNode 
 }
 
 export const inputClass =
-  "h-12 w-full rounded-2xl border border-border bg-paper px-3 text-base outline-none placeholder:text-muted-foreground/60 focus:border-primary";
+  "min-h-12 w-full rounded-2xl border border-border bg-paper px-3 py-3 text-base outline-none placeholder:text-muted-foreground/60 focus:border-primary";
 
 // Placeholder rows while the archive loads from storage, so the empty state doesn't flash.
 export function ItemCardSkeleton({ count = 3 }: { count?: number }) {
