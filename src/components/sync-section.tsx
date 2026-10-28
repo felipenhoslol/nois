@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { Field, SectionTitle, inputClass } from "./archive-ui";
 
 export function SyncSection() {
-  const { user } = useArchive();
+  const { user, ready } = useArchive();
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -29,7 +29,10 @@ export function SyncSection() {
   return (
     <section className="mt-6 grid gap-2">
       <SectionTitle>sincronizar na nuvem</SectionTitle>
-      {!supabase ? (
+      {!ready ? (
+        // Server has no Supabase client; wait for the browser before choosing a view.
+        <p className="card-object p-3 text-sm text-muted-foreground">carregando…</p>
+      ) : !supabase ? (
         <p className="card-object p-3 text-sm text-muted-foreground">
           Sincronização não configurada. O arquivo continua guardado só neste aparelho ♡
         </p>
