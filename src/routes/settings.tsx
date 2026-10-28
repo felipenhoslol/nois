@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { THEMES, type CustomTheme, type Settings } from "@/lib/settings";
+import { type CustomTheme, type Settings } from "@/lib/settings";
+import { THEMES } from "@/lib/themes";
 import { useArchive } from "@/lib/archive-context";
 import { Field, SectionTitle, inputClass } from "@/components/archive-ui";
 import { PageHeader } from "@/components/page-header";
@@ -67,7 +68,8 @@ const DEFAULT_CUSTOM_THEME: CustomTheme = {
 };
 
 function SettingsPage() {
-  const { settings, updateSettings, items, resetAll, replaceAll, user } = useArchive();
+  const { settings, device, updateDevice, updateSettings, items, resetAll, replaceAll, user } =
+    useArchive();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<"presets" | "myspace">(
     settings.useCustomTheme ? "myspace" : "presets",
@@ -193,18 +195,16 @@ function SettingsPage() {
                 <button
                   key={t.key}
                   onClick={() => {
-                    updateSettings({ theme: t.key, useCustomTheme: false });
+                    updateDevice({ theme: t.key });
                     toast.success(`Tema "${t.label}" aplicado ♡`);
                   }}
                   className={`card-object press p-3 text-left text-sm cursor-pointer ${
-                    settings.theme === t.key && !settings.useCustomTheme
-                      ? "border-primary ring-2 ring-primary/20"
-                      : ""
+                    device.theme === t.key ? "border-primary ring-2 ring-primary/20" : ""
                   }`}
                 >
                   <span className="font-medium block">{t.label}</span>
                   <span className="mt-1 block font-mono text-[0.55rem] uppercase tracking-[0.16em] text-muted-foreground">
-                    {settings.theme === t.key && !settings.useCustomTheme ? "em uso ✓" : "aplicar"}
+                    {device.theme === t.key ? "em uso ✓" : "aplicar"}
                   </span>
                 </button>
               ))}
@@ -444,8 +444,8 @@ function SettingsPage() {
         <SectionTitle>preferências & animações</SectionTitle>
         <Toggle
           label="Animações do toca-discos e transições"
-          on={settings.animations}
-          onChange={(v) => updateSettings({ animations: v })}
+          on={device.animations}
+          onChange={(v) => updateDevice({ animations: v })}
         />
         <Toggle
           label="Decorações e selos analógicos"

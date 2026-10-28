@@ -25,10 +25,13 @@ import {
   type SyncState,
 } from "./sync";
 import { applyTheme } from "./theme";
+import { loadDevicePrefs, saveDevicePrefs, type DevicePrefs } from "./device";
+import { DEFAULT_THEME } from "./themes";
 
 type Ctx = {
   items: Item[];
   settings: Settings;
+  device: DevicePrefs;
   ready: boolean;
   user: { email: string } | null;
   addItem: (i: Omit<Item, "id" | "createdAt" | "favorite" | "tags"> & Partial<Item>) => Item;
@@ -36,6 +39,7 @@ type Ctx = {
   removeItem: (id: string) => void;
   toggleFavorite: (id: string) => void;
   updateSettings: (patch: Partial<Settings>) => void;
+  updateDevice: (patch: Partial<DevicePrefs>) => void;
   replaceAll: (items: Item[], settings?: Partial<Settings>) => void;
   resetAll: () => void;
 };
@@ -53,6 +57,7 @@ const withAll = (list: string[], ids: Iterable<string>) => [...new Set([...list,
 export function ArchiveProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<Item[]>([]);
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
+  const [device, setDevice] = useState<DevicePrefs>({ theme: DEFAULT_THEME, animations: true });
   const [ready, setReady] = useState(false);
   const [session, setSession] = useState<{ id: string; email: string } | null>(null);
 
@@ -74,7 +79,9 @@ export function ArchiveProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setItems(hasStoredItems() ? loadItems() : seedItems());
-    setSettings(loadSettings());
+    const s = loadSettings();
+    setSettings(s);
+    setDevice(loadDevicePrefs({ theme: s.theme, animations: s.animations }));
     setReady(true);
   }, []);
 
@@ -85,8 +92,13 @@ export function ArchiveProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!ready) return;
     saveSettings(settings);
-    applyTheme(document.documentElement, settings);
   }, [settings, ready]);
+
+  useEffect(() => {
+    if (!ready) return;
+    saveDevicePrefs(device);
+    applyTheme(document.documentElement, device);
+  }, [device, ready]);
 
   // Sign-in / sign-out. On sign-in, merge cloud and local once, then mirror changes.
   useEffect(() => {
@@ -275,6 +287,7 @@ export function ArchiveProvider({ children }: { children: ReactNode }) {
     () => ({
       items,
       settings,
+      device,
       ready,
       user: session ? { email: session.email } : null,
       addItem,
@@ -284,13 +297,14 @@ export function ArchiveProvider({ children }: { children: ReactNode }) {
       toggleFavorite: (id) =>
         setItems((prev) => prev.map((i) => (i.id === id ? { ...i, favorite: !i.favorite } : i))),
       updateSettings: (patch) => setSettings((prev) => ({ ...prev, ...patch })),
+      updateDevice: (patch) => setDevice((prev) => ({ ...prev, ...patch })),
       replaceAll: (next, nextSettings) => {
         setItems(next);
         if (nextSettings) setSettings({ ...DEFAULT_SETTINGS, ...nextSettings });
       },
       resetAll: () => setItems([]),
     }),
-    [items, settings, ready, session, addItem],
+    [items, settings, device, ready, session, addItem],
   );
   return <ArchiveContext.Provider value={value}>{children}</ArchiveContext.Provider>;
 }

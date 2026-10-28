@@ -11,6 +11,8 @@ import {
 import type { ReactNode } from "react";
 import { Toaster } from "sonner";
 
+import { themeCss } from "../lib/themes";
+import { THEME_BOOT_SCRIPT } from "../lib/device";
 import appCss from "../styles.css?url";
 import { ArchiveProvider } from "../lib/archive-context";
 import { PlayerProvider, usePlayer } from "../lib/player-context";
@@ -105,8 +107,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR" data-theme="cassette" data-anim="true">
+    <html lang="pt-BR" data-theme="ceu" data-anim="true" suppressHydrationWarning>
       <head>
+        <style dangerouslySetInnerHTML={{ __html: themeCss() }} />
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <HeadContent />
       </head>
       <body>
