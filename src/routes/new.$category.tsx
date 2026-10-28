@@ -6,7 +6,8 @@ import { parseTags } from "@/lib/items";
 import { useArchive } from "@/lib/archive-context";
 import { Field, inputClass } from "@/components/archive-ui";
 import { MediaPicker } from "@/components/media-picker";
-import { MusicSearch } from "@/components/music-search";
+import { MusicPicker } from "@/components/music-picker";
+import type { TrackResult } from "@/lib/music-search";
 
 export const Route = createFileRoute("/new/$category")({
   head: () => ({
@@ -40,16 +41,17 @@ function NewItem() {
   const [audioUrl, setAudioUrl] = useState("");
   const [link, setLink] = useState("");
 
-  function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!title.trim()) {
+  // `picked` lets "Guardar música" save right away, before the state updates above land.
+  function save(picked?: TrackResult) {
+    const title_ = picked ? picked.title : title;
+    if (!title_.trim()) {
       toast.error("Por favor, preencha o título antes de guardar.");
       return;
     }
     const item = addItem({
       category: meta.key as Category,
-      title: title.trim(),
-      subtitle: subtitle.trim() || undefined,
+      title: title_.trim(),
+      subtitle: (picked ? picked.artist : subtitle).trim() || undefined,
       notes: notes.trim() || undefined,
       reason: reason.trim() || undefined,
       status: status || undefined,
@@ -57,13 +59,18 @@ function NewItem() {
       date: date || undefined,
       place: place.trim() || undefined,
       favorite,
-      image: imageUrl || undefined,
-      audioUrl: audioUrl || undefined,
-      link: link || undefined,
+      image: (picked ? picked.artwork : imageUrl) || undefined,
+      audioUrl: (picked ? picked.previewUrl : audioUrl) || undefined,
+      link: (picked ? picked.link : link) || undefined,
       tags: parseTags(tags),
     });
     toast.success(`Guardado na gaveta de ${meta.label} ♡`);
     navigate({ to: "/item/$id", params: { id: item.id } });
+  }
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    save();
   }
 
   return (
@@ -80,21 +87,11 @@ function NewItem() {
       </h1>
 
       <form onSubmit={submit} className="mt-4 grid gap-4">
-        {meta.key === "music" && (
-          <MusicSearch
-            onPick={(t) => {
-              setTitle(t.title);
-              setSubtitle([t.artist, t.album].filter(Boolean).join(" · "));
-              setImageUrl(t.artwork ?? "");
-              setAudioUrl(t.previewUrl ?? "");
-              setLink(t.link ?? "");
-            }}
-          />
-        )}
+        {meta.key === "music" && <MusicPicker onPick={save} />}
 
         <Field label="Título">
           <input
-            autoFocus
+            autoFocus={meta.key !== "music"}
             className={inputClass}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
