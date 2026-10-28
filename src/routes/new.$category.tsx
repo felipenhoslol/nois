@@ -7,6 +7,7 @@ import { useArchive } from "@/lib/archive-context";
 import { Field, inputClass } from "@/components/archive-ui";
 import { PageHeader } from "@/components/page-header";
 import { MediaPicker } from "@/components/media-picker";
+import { MusicSearch } from "@/components/music-search";
 
 export const Route = createFileRoute("/new/$category")({
   head: () => ({
@@ -38,6 +39,7 @@ function NewItem() {
   const [favorite, setFavorite] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
   const [audioUrl, setAudioUrl] = useState("");
+  const [link, setLink] = useState("");
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -58,6 +60,7 @@ function NewItem() {
       favorite,
       image: imageUrl || undefined,
       audioUrl: audioUrl || undefined,
+      link: link || undefined,
       tags: parseTags(tags),
     });
     toast.success(`Guardado na gaveta de ${meta.label} ♡`);
@@ -79,6 +82,18 @@ function NewItem() {
       />
 
       <form onSubmit={submit} className="anim-in mt-3 grid gap-3">
+        {meta.key === "music" && (
+          <MusicSearch
+            onPick={(t) => {
+              setTitle(t.title);
+              setSubtitle([t.artist, t.album].filter(Boolean).join(" · "));
+              setImageUrl(t.artwork ?? "");
+              setAudioUrl(t.previewUrl ?? "");
+              setLink(t.link ?? "");
+            }}
+          />
+        )}
+
         <Field label="Título">
           <input
             autoFocus
