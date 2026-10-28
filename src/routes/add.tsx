@@ -42,9 +42,7 @@ function AddMenu() {
           >
             <div className="flex items-center justify-between">
               <span className="text-xl">{c.emoji}</span>
-              <span className="font-mono text-[0.55rem] text-muted-foreground">
-                {c.kaomoji}
-              </span>
+              <span className="font-mono text-[0.55rem] text-muted-foreground">{c.kaomoji}</span>
             </div>
             <span className="mt-2 text-sm font-semibold group-hover:text-primary leading-tight">
               {c.label}

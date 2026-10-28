@@ -86,9 +86,7 @@ function ItemDetail() {
               alt={item.title}
               className="aspect-square w-full object-cover rounded-sm border border-border/40"
             />
-            <p className="mt-2 text-center font-hand text-base text-foreground">
-              {item.title} ♡
-            </p>
+            <p className="mt-2 text-center font-hand text-base text-foreground">{item.title} ♡</p>
             {item.subtitle && (
               <p className="text-center font-mono text-[0.62rem] text-muted-foreground truncate">
                 {item.subtitle}

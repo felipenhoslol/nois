@@ -220,10 +220,7 @@ function NewItem() {
           <span className="text-base">{favorite ? "★" : "☆"}</span>
         </button>
 
-        <button
-          type="submit"
-          className="press btn-primary mt-2"
-        >
+        <button type="submit" className="press btn-primary mt-2">
           Guardar no arquivo ♡
         </button>
       </form>

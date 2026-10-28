@@ -26,14 +26,9 @@ function NotFoundComponent() {
       <div className="max-w-md text-center">
         <h1 className="font-mono text-6xl font-bold text-foreground">404</h1>
         <h2 className="mt-4 text-xl font-semibold">Gaveta não encontrada</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Essa página não existe neste arquivo.
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">Essa página não existe neste arquivo.</p>
         <div className="mt-6">
-          <Link
-            to="/"
-            className="press btn-primary inline-flex text-sm"
-          >
+          <Link to="/" className="press btn-primary inline-flex text-sm">
             Voltar ao arquivo
           </Link>
         </div>
@@ -66,10 +61,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           >
             Tentar de novo
           </button>
-          <a
-            href="/"
-            className="press btn-ghost"
-          >
+          <a href="/" className="press btn-ghost">
             Início
           </a>
         </div>
@@ -193,4 +185,3 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
-

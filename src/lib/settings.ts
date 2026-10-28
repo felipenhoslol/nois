@@ -70,4 +70,3 @@ export function saveSettings(s: Settings) {
     console.warn("Could not save settings to localStorage", err);
   }
 }
-

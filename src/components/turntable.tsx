@@ -2,7 +2,13 @@ import { usePlayer } from "@/lib/player-context";
 import { catMeta } from "@/lib/categories";
 import type { Item } from "@/lib/items";
 
-export function Turntable({ track, onClose }: { track?: Item | null | undefined; onClose?: () => void }) {
+export function Turntable({
+  track,
+  onClose,
+}: {
+  track?: Item | null | undefined;
+  onClose?: () => void;
+}) {
   const {
     currentTrack,
     isPlaying,
@@ -173,8 +179,8 @@ export function Turntable({ track, onClose }: { track?: Item | null | undefined;
               ? isYouTube
                 ? "PLAYING [YOUTUBE HD]"
                 : active?.audioUrl
-                ? "PLAYING [AUDIO OK]"
-                : "PLAYING [VINYL SYNTH]"
+                  ? "PLAYING [AUDIO OK]"
+                  : "PLAYING [VINYL SYNTH]"
               : "STANDBY [PAUSED]"}
           </span>
           <span className="tracking-widest">
@@ -202,15 +208,10 @@ export function Turntable({ track, onClose }: { track?: Item | null | undefined;
               <div
                 key={`l-${i}`}
                 className={`flex-1 transition-opacity duration-100 ${
-                  i < 13
-                    ? "bg-emerald-500"
-                    : i < 17
-                    ? "bg-amber-400"
-                    : "bg-red-500"
+                  i < 13 ? "bg-emerald-500" : i < 17 ? "bg-amber-400" : "bg-red-500"
                 }`}
                 style={{
-                  opacity:
-                    isPlaying && i < (Math.sin(currentTime * 4 + i) * 7 + 11) ? 1 : 0.15,
+                  opacity: isPlaying && i < Math.sin(currentTime * 4 + i) * 7 + 11 ? 1 : 0.15,
                 }}
               />
             ))}
@@ -223,15 +224,10 @@ export function Turntable({ track, onClose }: { track?: Item | null | undefined;
               <div
                 key={`r-${i}`}
                 className={`flex-1 transition-opacity duration-100 ${
-                  i < 13
-                    ? "bg-emerald-500"
-                    : i < 17
-                    ? "bg-amber-400"
-                    : "bg-red-500"
+                  i < 13 ? "bg-emerald-500" : i < 17 ? "bg-amber-400" : "bg-red-500"
                 }`}
                 style={{
-                  opacity:
-                    isPlaying && i < (Math.cos(currentTime * 3.5 + i) * 7 + 10) ? 1 : 0.15,
+                  opacity: isPlaying && i < Math.cos(currentTime * 3.5 + i) * 7 + 10 ? 1 : 0.15,
                 }}
               />
             ))}

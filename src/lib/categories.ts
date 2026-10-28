@@ -178,6 +178,5 @@ export const CATEGORIES: CategoryMeta[] = [
 export const catMeta = (key: string): CategoryMeta =>
   (CATEGORIES.find((c) => c.key === key) ?? CATEGORIES[CATEGORIES.length - 1])!;
 
-
 // Categories whose form shows the Date + Place fields.
 export const DATE_PLACE_CATEGORIES: Category[] = ["memory", "promise", "said", "place"];

@@ -49,11 +49,7 @@ export function PageHeader({
           <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-foreground">
             {title}
           </h1>
-          {subtitle && (
-            <p className="mt-0.5 text-xs text-muted-foreground font-mono">
-              {subtitle}
-            </p>
-          )}
+          {subtitle && <p className="mt-0.5 text-xs text-muted-foreground font-mono">{subtitle}</p>}
         </div>
         {action && <div>{action}</div>}
       </div>

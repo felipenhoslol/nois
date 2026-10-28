@@ -9,7 +9,13 @@ import {
 } from "react";
 import type { Item } from "./items";
 import { VintageSynthAudio } from "./synth-audio";
-import { extractYouTubeId, loadYouTubeIframeAPI, rpmToRate, type YTPlayer, type YTPlayerEvent } from "./youtube";
+import {
+  extractYouTubeId,
+  loadYouTubeIframeAPI,
+  rpmToRate,
+  type YTPlayer,
+  type YTPlayerEvent,
+} from "./youtube";
 
 export type PlayerState = {
   currentTrack: Item | null;
@@ -309,32 +315,26 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     [duration, isYouTube],
   );
 
-  const setRpm = useCallback(
-    (newRpm: 33 | 45) => {
-      setRpmState(newRpm);
-      const rate = rpmToRate(newRpm);
-      if (audioRef.current) {
-        audioRef.current.playbackRate = rate;
-      }
-      if (ytPlayerRef.current && ytPlayerRef.current.setPlaybackRate) {
-        ytPlayerRef.current.setPlaybackRate(rate);
-      }
-    },
-    [],
-  );
+  const setRpm = useCallback((newRpm: 33 | 45) => {
+    setRpmState(newRpm);
+    const rate = rpmToRate(newRpm);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = rate;
+    }
+    if (ytPlayerRef.current && ytPlayerRef.current.setPlaybackRate) {
+      ytPlayerRef.current.setPlaybackRate(rate);
+    }
+  }, []);
 
-  const setVolume = useCallback(
-    (v: number) => {
-      setVolumeState(v);
-      if (audioRef.current) {
-        audioRef.current.volume = v;
-      }
-      if (ytPlayerRef.current && ytPlayerRef.current.setVolume) {
-        ytPlayerRef.current.setVolume(v * 100);
-      }
-    },
-    [],
-  );
+  const setVolume = useCallback((v: number) => {
+    setVolumeState(v);
+    if (audioRef.current) {
+      audioRef.current.volume = v;
+    }
+    if (ytPlayerRef.current && ytPlayerRef.current.setVolume) {
+      ytPlayerRef.current.setVolume(v * 100);
+    }
+  }, []);
 
   const openTurntable = useCallback(() => setIsTurntableOpen(true), []);
   const closeTurntable = useCallback(() => setIsTurntableOpen(false), []);

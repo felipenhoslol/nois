@@ -66,11 +66,7 @@ export function SyncSection() {
               placeholder="voce@email.com"
             />
           </Field>
-          <button
-            type="submit"
-            disabled={sending}
-            className="press btn-primary text-sm"
-          >
+          <button type="submit" disabled={sending} className="press btn-primary text-sm">
             {sending ? "enviando…" : "receber link de acesso"}
           </button>
           <p className="text-xs text-muted-foreground">

@@ -32,7 +32,5 @@ it("custom theme writes vars", () => {
 
 it("hue sets primary", () => {
   applyTheme(document.documentElement, { ...DEFAULT_SETTINGS, hue: 200 });
-  expect(document.documentElement.style.getPropertyValue("--primary")).toBe(
-    "oklch(0.55 0.14 200)",
-  );
+  expect(document.documentElement.style.getPropertyValue("--primary")).toBe("oklch(0.55 0.14 200)");
 });
