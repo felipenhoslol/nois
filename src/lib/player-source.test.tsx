@@ -20,6 +20,7 @@ const sp: Item = {
   audioUrl: "https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC",
 };
 const yt: Item = { ...base, id: "yt", link: "https://youtu.be/dQw4w9WgXcQ" };
+const yt2: Item = { ...base, id: "yt2", link: "https://youtu.be/9bZkp7q19f0" };
 
 const fakes = vi.hoisted(() => {
   const controller = {
@@ -45,7 +46,8 @@ const fakes = vi.hoisted(() => {
   const createController = vi.fn((_el: unknown, _o: unknown, cb: (c: unknown) => void) =>
     cb(controller),
   );
-  return { controller, ytPlayer, createController };
+  const ytCtor = vi.fn();
+  return { controller, ytPlayer, createController, ytCtor };
 });
 
 vi.mock("./archive-context", () => ({ useArchive: () => ({ items: [sp, yt] }) }));
@@ -93,6 +95,7 @@ beforeEach(() => {
   window.YT = {
     Player: class {
       constructor(_el: string, opts: { events: { onReady: (e: unknown) => void } }) {
+        fakes.ytCtor(opts);
         opts.events.onReady({ target: fakes.ytPlayer, data: 0 });
         return fakes.ytPlayer;
       }
@@ -138,4 +141,37 @@ it("playNext/playPrev walk the archive's music items", async () => {
   await act(async () => ctx.playPrev());
   await flush();
   expect(ctx.currentTrack?.id).toBe("sp");
+});
+
+async function deferYouTubeLoads(n: number) {
+  const { loadYouTubeIframeAPI } = await import("./youtube");
+  const resolvers: (() => void)[] = [];
+  const p = new Promise<void>((r) => resolvers.push(r));
+  for (let i = 0; i < n; i++) vi.mocked(loadYouTubeIframeAPI).mockImplementationOnce(() => p);
+  return () => resolvers[0]!();
+}
+
+it("switching away while the YouTube API loads never starts YouTube", async () => {
+  await mount();
+  const release = await deferYouTubeLoads(1);
+  await act(async () => ctx.playTrack(yt));
+  await act(async () => ctx.playTrack(sp));
+  await act(async () => release());
+  await flush();
+  expect(ctx.source).toBe("spotify");
+  expect(fakes.ytPlayer.playVideo).not.toHaveBeenCalled();
+  expect(fakes.ytPlayer.loadVideoById).not.toHaveBeenCalled();
+});
+
+it("two YouTube taps during the load play only the latest video", async () => {
+  await mount();
+  const release = await deferYouTubeLoads(2);
+  await act(async () => ctx.playTrack(yt));
+  await act(async () => ctx.playTrack(yt2));
+  await act(async () => release());
+  await flush();
+  expect(fakes.ytCtor).toHaveBeenCalledTimes(1);
+  expect(fakes.ytCtor.mock.calls[0]![0]).toMatchObject({ videoId: "9bZkp7q19f0" });
+  expect(fakes.ytPlayer.loadVideoById).not.toHaveBeenCalledWith("dQw4w9WgXcQ");
+  expect(fakes.ytPlayer.playVideo).toHaveBeenCalled();
 });

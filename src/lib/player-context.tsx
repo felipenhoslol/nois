@@ -70,6 +70,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const ytPlayerRef = useRef<YTPlayer | null>(null);
   const spotifyRef = useRef<SpotifyController | null>(null);
   const spotifyInitRef = useRef(false);
+  const ytReqRef = useRef(0);
+  const ytVideoRef = useRef("");
   const spotifyUriRef = useRef("");
   // Read inside player callbacks so events from a source we just left are ignored.
   const sourceRef = useRef<PlayerSource>("synth");
@@ -113,7 +115,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   // Initialize or attach YouTube player
   const initYouTubePlayer = useCallback(
     async (videoId: string) => {
+      const req = ++ytReqRef.current;
+      ytVideoRef.current = videoId;
       await loadYouTubeIframeAPI();
+      // Latest wins: a newer tap (or a switch to another source) made this call stale.
+      if (req !== ytReqRef.current || sourceRef.current !== "youtube") return null;
 
       return new Promise<YTPlayer | null>((resolve) => {
         if (ytPlayerRef.current && ytPlayerRef.current.loadVideoById) {
@@ -137,7 +143,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
             width: "100%",
             videoId: videoId,
             playerVars: {
-              autoplay: 1,
+              autoplay: 0, // onReady starts it, only if YouTube is still the source
               controls: 0,
               modestbranding: 1,
               rel: 0,
@@ -147,7 +153,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
               onReady: (event: YTPlayerEvent) => {
                 event.target.setVolume(volume * 100);
                 event.target.setPlaybackRate(rpmToRate(rpm));
-                event.target.playVideo();
+                if (sourceRef.current === "youtube") {
+                  // A newer video tapped before the player was ready replaces this one.
+                  if (ytVideoRef.current !== videoId)
+                    event.target.loadVideoById(ytVideoRef.current);
+                  event.target.playVideo();
+                }
                 resolve(event.target);
               },
               onStateChange: (event: YTPlayerEvent) => {
