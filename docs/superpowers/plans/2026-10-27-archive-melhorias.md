@@ -30,8 +30,8 @@
 
 - Chaves do localStorage não mudam: `archive.items.v1` e `archive.settings.v1` (dados atuais das pessoas têm de continuar abrindo).
 - Sem as variáveis `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`, o app funciona exatamente como hoje (só local).
-- Não editar `vite.config.ts` além do bloco `defineConfig` existente; o config da Lovable já injeta `VITE_*`, alias `@` e plugins.
-- Não reescrever histórico git já enviado (AGENTS.md / Lovable). Cada tarefa deixa o app buildando (`npm run build`).
+- Não editar `vite.config.ts` além do bloco `defineConfig` existente; o config já injeta `VITE_*`, alias `@` e plugins.
+- Não reescrever histórico git já enviado (histórico já enviado). Cada tarefa deixa o app buildando (`npm run build`).
 - Textos de interface em português, no tom atual (♡, kaomoji). Não trocar a identidade retrô nem os 8 temas.
 - Nada de chave secreta no front: só a anon key do Supabase; acesso protegido por RLS.
 - Gerenciador de pacotes: `npm` (há `package-lock.json`).
@@ -60,7 +60,7 @@
 
 - [ ] **Step 1:** `git init`, criar commit inicial com o código atual (`.gitignore` já existe).
 - [ ] **Step 2:** `npm install` e `npm install -D vitest jsdom`. Adicionar `"test": "vitest run"` em `scripts`.
-- [ ] **Step 3:** Criar `vitest.config.ts` com `defineConfig` do `vitest/config`, `resolve.alias` `@` → `./src`, `test.include: ["src/**/*.test.ts?(x)"]`. Não importar o config da Lovable (ele traz plugins de SSR que o Vitest não precisa).
+- [ ] **Step 3:** Criar `vitest.config.ts` com `defineConfig` do `vitest/config`, `resolve.alias` `@` → `./src`, `test.include: ["src/**/*.test.ts?(x)"]`. Não importar o config do app (ele traz plugins de SSR que o Vitest não precisa).
 - [ ] **Step 4: Escrever o teste**
 
 ```ts
@@ -301,7 +301,7 @@ create policy "delete own folder" on storage.objects for delete to authenticated
 - [ ] **Step 1: Teste** — `vi.stubEnv` sem as variáveis, `vi.resetModules()`, importar `./supabase` → `expect(supabase).toBeNull()`.
 - [ ] **Step 2:** `npm test` → FAIL.
 - [ ] **Step 3:** `npm install @supabase/supabase-js`; criar `supabase.ts` com `createClient(url, key, { auth: { persistSession: true, detectSessionInUrl: true } })` só no navegador (`typeof window !== "undefined"`), senão `null`.
-- [ ] **Step 4:** `npm test` → PASS. Pessoa usuária: criar o projeto Supabase (ou ativar Lovable Cloud), rodar o SQL no SQL Editor, colar URL/anon key em `.env`, e em Auth → URL Configuration adicionar a URL do app em Redirect URLs.
+- [ ] **Step 4:** `npm test` → PASS. Pessoa usuária: criar o projeto Supabase, rodar o SQL no SQL Editor, colar URL/anon key em `.env`, e em Auth → URL Configuration adicionar a URL do app em Redirect URLs.
 - [ ] **Step 5: Commit** `feat: add supabase client and schema`
 
 ### Task 8: Login por link mágico e sincronização dos itens

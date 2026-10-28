@@ -1329,23 +1329,30 @@ pequenas interações prazerosas.
 
 Criar uma interface completa e navegável, com todas as telas principais, estados vazios, formulários, cartões, menus, modais, animações e componentes necessários para que o aplicativo pareça um produto real e pronto para uso.
 
-This project was built with [Lovable](https://lovable.dev).
+## Rodar localmente
 
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/b2d8de5a-a675-4cef-8316-edcfb967328f).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Precisa de Node.js 20+ e npm.
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+npm install
+cp .env.example .env   # preencha com a URL e a anon key do Supabase (ou deixe vazio para usar só local)
+npm run dev            # http://localhost:8080
+npm test
 ```
+
+## Publicação
+
+O site roda na Vercel, ligado ao GitHub: cada push na `main` publica sozinho.
+Variáveis na Vercel: `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`.
+Banco e regras de acesso: `supabase/migrations/`.
+
+## Acesso (só o casal)
+
+O arquivo é um só, compartilhado por duas pessoas:
+
+1. Rode as migrações de `supabase/migrations/` em ordem no SQL Editor.
+2. Cadastre os dois e-mails que podem entrar:
+   `insert into public.members (email) values ('voce@exemplo.com'), ('ela@exemplo.com');`
+3. Em Authentication → Users → Add user, crie os dois usuários com esses e-mails.
+4. Em Authentication → Sign In / Providers, desligue "Allow new users to sign up", mantenha "Confirm email" ligado e deixe só o provedor Email ativo.
+5. Em Authentication → URL Configuration, coloque o endereço da Vercel em Site URL e em Redirect URLs.

@@ -149,7 +149,7 @@ export async function uploadMedia(file: Blob, ext: string): Promise<string | nul
 export async function fetchRemote(): Promise<{ items: Item[]; settings: Settings | null }> {
   const [items, settings] = await Promise.all([
     supabase!.from("items").select("data"),
-    supabase!.from("settings").select("data").maybeSingle(),
+    supabase!.from("settings").select("data").eq("id", "shared").maybeSingle(),
   ]);
   if (items.error) throw items.error;
   if (settings.error) throw settings.error;
@@ -174,9 +174,17 @@ export async function deleteRemoteItems(ids: string[]): Promise<void> {
   if (error) throw error;
 }
 
-export async function saveRemoteSettings(userId: string, s: Settings): Promise<void> {
+// The couple shares one settings row.
+export async function saveRemoteSettings(s: Settings): Promise<void> {
   const { error } = await supabase!
     .from("settings")
-    .upsert({ user_id: userId, data: s, updated_at: new Date().toISOString() });
+    .upsert({ id: "shared", data: s, updated_at: new Date().toISOString() });
   if (error) throw error;
+}
+
+// True only for the two e-mails listed in public.members (see the migration).
+export async function isMember(): Promise<boolean> {
+  const { data, error } = await supabase!.rpc("is_member");
+  if (error) throw error;
+  return data === true;
 }

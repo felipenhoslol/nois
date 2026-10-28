@@ -34,3 +34,4 @@ dist-ssr
 # Secrets / local tooling
 .env
 .superpowers/
+.vercel

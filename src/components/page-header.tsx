@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { useRouter } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
 export function PageHeader({
@@ -16,14 +16,14 @@ export function PageHeader({
   backLabel?: string;
   action?: ReactNode;
 }) {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleBack = (e: React.MouseEvent) => {
     e.preventDefault();
     if (typeof window !== "undefined" && window.history.length > 1) {
       window.history.back();
     } else {
-      navigate({ to: backTo as any });
+      router.history.push(backTo); // backTo is a plain path string, e.g. "/c/music"
     }
   };
 
