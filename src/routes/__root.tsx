@@ -180,6 +180,25 @@ function RootComponent() {
             >
               <div id="archive-yt-player" />
             </div>
+
+            {/* Persistent Spotify embed: never unmounted or moved (that reloads the iframe).
+                Task 7 shows it in the big player by flipping data-visible. */}
+            <div
+              id="archive-spotify-player-container"
+              data-visible="false"
+              style={{
+                position: "fixed",
+                bottom: 0,
+                left: 0,
+                width: 300,
+                height: 152,
+                opacity: 0,
+                pointerEvents: "none",
+              }}
+              aria-hidden="true"
+            >
+              <div id="archive-spotify-player" />
+            </div>
           </div>
         </PlayerProvider>
       </ArchiveProvider>
