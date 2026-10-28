@@ -1,11 +1,10 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { catMeta, DATE_PLACE_CATEGORIES, type Category } from "@/lib/categories";
 import { parseTags } from "@/lib/items";
 import { useArchive } from "@/lib/archive-context";
 import { Field, inputClass } from "@/components/archive-ui";
-import { PageHeader } from "@/components/page-header";
 import { MediaPicker } from "@/components/media-picker";
 import { MusicSearch } from "@/components/music-search";
 
@@ -69,19 +68,18 @@ function NewItem() {
 
   return (
     <main className="px-4 pt-6">
-      <PageHeader
-        title={
-          <span className="flex items-center gap-2">
-            <span>{meta.emoji}</span> Novo em {meta.label}
-          </span>
-        }
-        subtitle="adicione este pedacinho ao arquivo"
-        kaomoji={meta.kaomoji}
-        backTo={`/c/${meta.key}`}
-        backLabel={`← ${meta.label}`}
-      />
+      <Link
+        to="/c/$category"
+        params={{ category: meta.key }}
+        className="text-sm text-muted-foreground"
+      >
+        ← {meta.label}
+      </Link>
+      <h1 className="mt-2 text-3xl font-bold">
+        {meta.emoji} Novo em {meta.label}
+      </h1>
 
-      <form onSubmit={submit} className="anim-in mt-3 grid gap-3">
+      <form onSubmit={submit} className="mt-4 grid gap-4">
         {meta.key === "music" && (
           <MusicSearch
             onPick={(t) => {
@@ -114,13 +112,7 @@ function NewItem() {
         </Field>
 
         {/* Media Picker for visual photos / polaroids and audio */}
-        <MediaPicker
-          imageUrl={imageUrl}
-          onImageChange={setImageUrl}
-          audioUrl={audioUrl}
-          onAudioChange={setAudioUrl}
-          showAudio={meta.key === "music"}
-        />
+        {meta.key !== "music" && <MediaPicker imageUrl={imageUrl} onImageChange={setImageUrl} />}
 
         {meta.statuses ? (
           <Field label="Status">
@@ -130,7 +122,7 @@ function NewItem() {
                   key={s}
                   type="button"
                   onClick={() => setStatus(s === status ? "" : s)}
-                  className={`press label-chip ${
+                  className={`press chip min-h-11 ${
                     s === status ? "bg-primary text-primary-foreground" : "bg-card"
                   }`}
                 >
@@ -141,84 +133,99 @@ function NewItem() {
           </Field>
         ) : null}
 
-        {DATE_PLACE_CATEGORIES.includes(meta.key) ? (
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Data">
-              <input
-                type="date"
+        <details className="surface-row p-4">
+          <summary className="min-h-11 cursor-pointer text-base font-medium">Mais detalhes</summary>
+          <div className="mt-3 grid gap-4">
+            {meta.key === "music" ? (
+              <MediaPicker
+                imageUrl={imageUrl}
+                onImageChange={setImageUrl}
+                audioUrl={audioUrl}
+                onAudioChange={setAudioUrl}
+                showAudio
+              />
+            ) : null}
+
+            {DATE_PLACE_CATEGORIES.includes(meta.key) ? (
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Data">
+                  <input
+                    type="date"
+                    className={inputClass}
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                  />
+                </Field>
+                <Field label="Lugar">
+                  <input
+                    className={inputClass}
+                    value={place}
+                    onChange={(e) => setPlace(e.target.value)}
+                    placeholder="onde aconteceu?"
+                  />
+                </Field>
+              </div>
+            ) : null}
+
+            <Field label="Por que ele gosta / por que importa">
+              <textarea
+                rows={2}
                 className={inputClass}
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="o motivo ou a história por trás..."
               />
             </Field>
-            <Field label="Lugar">
-              <input
+
+            <Field label="Observações">
+              <textarea
+                rows={3}
                 className={inputClass}
-                value={place}
-                onChange={(e) => setPlace(e.target.value)}
-                placeholder="onde aconteceu?"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="pequenos detalhes, comentários ou lembretes..."
               />
             </Field>
+
+            <Field label="Tags">
+              <input
+                className={inputClass}
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="#nostalgia #presentes #verão"
+              />
+            </Field>
+
+            <Field label="Nota de afeição">
+              <div className="flex gap-1 text-2xl">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setRating(n === rating ? 0 : n)}
+                    className={`press leading-none ${
+                      n <= rating ? "text-primary" : "text-muted-foreground/40"
+                    }`}
+                    aria-label={`${n} estrelas`}
+                  >
+                    ★
+                  </button>
+                ))}
+              </div>
+            </Field>
+
+            <button
+              type="button"
+              onClick={() => setFavorite((f) => !f)}
+              className={`press card-object p-3 text-left text-sm flex items-center justify-between ${
+                favorite ? "border-primary text-primary" : ""
+              }`}
+            >
+              <span>{favorite ? "♥ marcado como favorito" : "♡ marcar como favorito"}</span>
+              <span className="text-base">{favorite ? "★" : "☆"}</span>
+            </button>
           </div>
-        ) : null}
-
-        <Field label="Por que ele gosta / por que importa">
-          <textarea
-            rows={2}
-            className={inputClass}
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="o motivo ou a história por trás..."
-          />
-        </Field>
-
-        <Field label="Observações">
-          <textarea
-            rows={3}
-            className={inputClass}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="pequenos detalhes, comentários ou lembretes..."
-          />
-        </Field>
-
-        <Field label="Tags">
-          <input
-            className={inputClass}
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-            placeholder="#nostalgia #presentes #verão"
-          />
-        </Field>
-
-        <Field label="Nota de afeição">
-          <div className="flex gap-1 text-2xl">
-            {[1, 2, 3, 4, 5].map((n) => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => setRating(n === rating ? 0 : n)}
-                className={`press leading-none ${
-                  n <= rating ? "text-primary" : "text-muted-foreground/40"
-                }`}
-                aria-label={`${n} estrelas`}
-              >
-                ★
-              </button>
-            ))}
-          </div>
-        </Field>
-
-        <button
-          type="button"
-          onClick={() => setFavorite((f) => !f)}
-          className={`press card-object p-3 text-left text-sm flex items-center justify-between ${
-            favorite ? "border-primary text-primary" : ""
-          }`}
-        >
-          <span>{favorite ? "♥ marcado como favorito" : "♡ marcar como favorito"}</span>
-          <span className="text-base">{favorite ? "★" : "☆"}</span>
-        </button>
+        </details>
 
         <button type="submit" className="press btn-primary mt-2">
           Guardar no arquivo ♡
