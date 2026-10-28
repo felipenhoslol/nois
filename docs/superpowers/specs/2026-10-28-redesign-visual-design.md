@@ -74,11 +74,11 @@ Regras: sem CAIXA ALTA em rótulo, sem letra mono, sem fonte manuscrita ou pixel
 | Chave     | Nome na tela | Clima                                   | Fundo   | Superfície | Texto   | Texto suave | Destaque |
 | --------- | ------------ | --------------------------------------- | ------- | ---------- | ------- | ----------- | -------- |
 | `noite`   | Noite        | escuro azulado (o dele)                 | #14161D | #1D2029    | #ECEDF2 | #A3A8B6     | #8FB3FF  |
-| `algodao` | Algodão-doce | claro rosa (o dela)                     | #FFF5F7 | #FFFFFF    | #3A2230 | #7A5566     | #D6336C  |
+| `algodao` | Algodão-doce | claro rosa (o dela)                     | #FFF5F7 | #FFFFFF    | #3A2230 | #7A5566     | #C92A62  |
 | `fita`    | Fita verde   | claro, verde-sálvia de fita antiga      | #EEF1E8 | #FAFBF6    | #22281F | #59614F     | #3D6B4C  |
 | `hifi`    | Hi-Fi        | escuro quente, âmbar de aparelho de som | #1B1714 | #27211C    | #F2EADF | #B8AA98     | #E8A04B  |
 | `vhs`     | VHS          | escuro roxo de fita de vídeo            | #17121F | #231A2F    | #EFE7F8 | #B3A6C6     | #C69BFF  |
-| `ceu`     | Céu          | claro azul, neutro                      | #F2F6FB | #FFFFFF    | #1E2A3A | #556377     | #2F6FD6  |
+| `ceu`     | Céu          | claro azul, neutro                      | #F2F6FB | #FFFFFF    | #1E2A3A | #556377     | #2A64C8  |
 
 Esses valores são o ponto de partida. A regra que manda: **todo par de texto e fundo precisa ter contraste de pelo menos 4,5:1** (texto, texto suave, destaque usado como texto, texto do botão sobre o destaque). Elementos grandes e ícones precisam de pelo menos 3:1. Se um valor da tabela não passar, ajuste o valor e mantenha o clima.
 
