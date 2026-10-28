@@ -1,4 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { openCommandPalette } from "./command-palette";
+import { useArchive } from "@/lib/archive-context";
 
 const tabs = [
   { to: "/", label: "Início", icon: "⌂" },
@@ -10,6 +12,7 @@ const tabs = [
 
 export function SideNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { user } = useArchive();
   return (
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-border bg-paper/70 px-4 py-8 md:flex">
       <div className="px-2">
@@ -39,6 +42,15 @@ export function SideNav() {
         })}
       </nav>
 
+      <button
+        type="button"
+        onClick={openCommandPalette}
+        className="press mt-3 flex items-center justify-between rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground hover:text-foreground"
+      >
+        <span>procurar qualquer coisa</span>
+        <kbd className="font-mono text-[0.6rem]">Ctrl K</kbd>
+      </button>
+
       <Link
         to="/add"
         className="press mt-6 flex items-center justify-center gap-2 rounded-full border border-border bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground"
@@ -47,7 +59,7 @@ export function SideNav() {
       </Link>
 
       <p className="mt-auto px-2 font-mono text-[0.55rem] uppercase tracking-[0.2em] text-muted-foreground">
-        guardado no seu aparelho
+        {user ? "sincronizado na nuvem ♡" : "guardado no seu aparelho"}
       </p>
     </aside>
   );

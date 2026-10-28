@@ -1,7 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CATEGORIES, catMeta } from "@/lib/archive";
+import { CATEGORIES, catMeta } from "@/lib/categories";
 import { useArchive } from "@/lib/archive-context";
-import { ItemCard, RetroClock, SectionTitle, EmptyDrawer } from "@/components/archive-ui";
+import {
+  ItemCard,
+  ItemCardSkeleton,
+  RetroClock,
+  SectionTitle,
+  EmptyDrawer,
+} from "@/components/archive-ui";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -39,12 +45,8 @@ function Home() {
           <p className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-muted-foreground">
             arquivo pessoal · vol. 01
           </p>
-          <h1 className="mt-1 text-3xl font-bold tracking-tight">
-            ♡ {settings.archiveName}
-          </h1>
-          <p className="font-hand text-lg text-muted-foreground">
-            {settings.favoriteQuote}
-          </p>
+          <h1 className="mt-1 text-3xl font-bold tracking-tight">♡ {settings.archiveName}</h1>
+          <p className="font-hand text-lg text-muted-foreground">{settings.favoriteQuote}</p>
         </div>
         <RetroClock />
       </header>
@@ -77,9 +79,7 @@ function Home() {
           </Link>
         ) : (
           <div className="polaroid w-1/2 rotate-[-1.5deg]">
-            <div className="grid aspect-square place-items-center bg-secondary text-4xl">
-              📼
-            </div>
+            <div className="grid aspect-square place-items-center bg-secondary text-4xl">📼</div>
             <p className="mt-2 text-center font-hand text-base">primeira lembrança</p>
           </div>
         )}
@@ -158,7 +158,10 @@ function Home() {
         >
           memory box
         </SectionTitle>
-        <Link to="/box" className="card-object block bg-secondary/70 p-4 border-dashed hover:border-primary/50">
+        <Link
+          to="/box"
+          className="card-object block bg-secondary/70 p-4 border-dashed hover:border-primary/50"
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="font-hand text-xl">Surprise me ♡</p>
@@ -183,7 +186,9 @@ function Home() {
           ♡ favoritos
         </SectionTitle>
         <div className="grid gap-2">
-          {favorites.length ? (
+          {!ready ? (
+            <ItemCardSkeleton count={2} />
+          ) : favorites.length ? (
             favorites.map((i, n) => <ItemCard key={i.id} item={i} index={n} />)
           ) : (
             <EmptyDrawer text="Nenhum favorito ainda ♡" kaomoji="( ˘ ³˘)♥" />
@@ -195,7 +200,9 @@ function Home() {
       <section className="mt-6">
         <SectionTitle>recentemente adicionados</SectionTitle>
         <div className="grid gap-2">
-          {recent.length ? (
+          {!ready ? (
+            <ItemCardSkeleton />
+          ) : recent.length ? (
             recent.map((i, n) => <ItemCard key={i.id} item={i} index={n} />)
           ) : (
             <EmptyDrawer text={catMeta("note").empty} kaomoji="( ⭐ )" />

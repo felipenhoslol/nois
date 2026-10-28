@@ -1,11 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { catMeta, type Category } from "@/lib/archive";
+import { catMeta, DATE_PLACE_CATEGORIES, type Category } from "@/lib/categories";
+import { parseTags } from "@/lib/items";
 import { useArchive } from "@/lib/archive-context";
 import { Field, inputClass } from "@/components/archive-ui";
 import { PageHeader } from "@/components/page-header";
 import { MediaPicker } from "@/components/media-picker";
+import { MusicSearch } from "@/components/music-search";
 
 export const Route = createFileRoute("/new/$category")({
   head: () => ({
@@ -37,6 +39,7 @@ function NewItem() {
   const [favorite, setFavorite] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
   const [audioUrl, setAudioUrl] = useState("");
+  const [link, setLink] = useState("");
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -57,10 +60,8 @@ function NewItem() {
       favorite,
       image: imageUrl || undefined,
       audioUrl: audioUrl || undefined,
-      tags: tags
-        .split(/[,\s]+/)
-        .map((t) => t.replace(/^#/, "").trim())
-        .filter(Boolean),
+      link: link || undefined,
+      tags: parseTags(tags),
     });
     toast.success(`Guardado na gaveta de ${meta.label} ♡`);
     navigate({ to: "/item/$id", params: { id: item.id } });
@@ -81,6 +82,18 @@ function NewItem() {
       />
 
       <form onSubmit={submit} className="anim-in mt-3 grid gap-3">
+        {meta.key === "music" && (
+          <MusicSearch
+            onPick={(t) => {
+              setTitle(t.title);
+              setSubtitle([t.artist, t.album].filter(Boolean).join(" · "));
+              setImageUrl(t.artwork ?? "");
+              setAudioUrl(t.previewUrl ?? "");
+              setLink(t.link ?? "");
+            }}
+          />
+        )}
+
         <Field label="Título">
           <input
             autoFocus
@@ -128,7 +141,7 @@ function NewItem() {
           </Field>
         ) : null}
 
-        {meta.key === "memory" || meta.key === "promise" || meta.key === "said" || meta.key === "place" ? (
+        {DATE_PLACE_CATEGORIES.includes(meta.key) ? (
           <div className="grid grid-cols-2 gap-3">
             <Field label="Data">
               <input
@@ -207,10 +220,7 @@ function NewItem() {
           <span className="text-base">{favorite ? "★" : "☆"}</span>
         </button>
 
-        <button
-          type="submit"
-          className="press mt-2 rounded-[var(--radius)] bg-primary px-4 py-3 font-medium text-primary-foreground shadow-lg hover:brightness-105"
-        >
+        <button type="submit" className="press btn-primary mt-2">
           Guardar no arquivo ♡
         </button>
       </form>

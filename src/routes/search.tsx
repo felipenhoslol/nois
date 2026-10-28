@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { CATEGORIES, catMeta } from "@/lib/archive";
+import { CATEGORIES, catMeta } from "@/lib/categories";
 import { useArchive } from "@/lib/archive-context";
+import { matchesQuery } from "@/lib/search";
 import { EmptyDrawer, ItemCard, SectionTitle, inputClass } from "@/components/archive-ui";
 import { PageHeader } from "@/components/page-header";
 
@@ -34,13 +35,7 @@ function SearchPage() {
   const results = items
     .filter((i) => (cat ? i.category === cat : true))
     .filter((i) => (onlyFav ? i.favorite : true))
-    .filter((i) => {
-      if (!q.trim()) return true;
-      const hay = [i.title, i.subtitle, i.notes, i.reason, i.status, i.place, ...i.tags]
-        .join(" ")
-        .toLowerCase();
-      return hay.includes(q.toLowerCase().replace(/^#/, ""));
-    });
+    .filter((i) => matchesQuery(i, q));
 
   const grouped = CATEGORIES.map((c) => ({
     meta: c,

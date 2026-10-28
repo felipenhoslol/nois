@@ -18,6 +18,7 @@ import { BottomNav } from "../components/bottom-nav";
 import { SideNav } from "../components/side-nav";
 import { MiniPlayer } from "../components/mini-player";
 import { Turntable } from "../components/turntable";
+import { CommandPalette } from "../components/command-palette";
 
 function NotFoundComponent() {
   return (
@@ -25,14 +26,9 @@ function NotFoundComponent() {
       <div className="max-w-md text-center">
         <h1 className="font-mono text-6xl font-bold text-foreground">404</h1>
         <h2 className="mt-4 text-xl font-semibold">Gaveta não encontrada</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Essa página não existe neste arquivo.
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">Essa página não existe neste arquivo.</p>
         <div className="mt-6">
-          <Link
-            to="/"
-            className="press inline-flex rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-          >
+          <Link to="/" className="press btn-primary inline-flex text-sm">
             Voltar ao arquivo
           </Link>
         </div>
@@ -61,14 +57,11 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
               router.invalidate();
               reset();
             }}
-            className="press rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+            className="press btn-primary text-sm"
           >
             Tentar de novo
           </button>
-          <a
-            href="/"
-            className="press rounded-md border border-border bg-card px-4 py-2 text-sm font-medium"
-          >
+          <a href="/" className="press btn-ghost">
             Início
           </a>
         </div>
@@ -162,6 +155,8 @@ function RootComponent() {
             {/* Floating Mini-Player */}
             <MiniPlayer />
 
+            <CommandPalette />
+
             {/* Turntable Modal */}
             <TurntableModal />
 
@@ -190,4 +185,3 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
-

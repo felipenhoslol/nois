@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { catMeta, type Item } from "@/lib/archive";
+import { catMeta } from "@/lib/categories";
+import type { Item } from "@/lib/items";
 import { useArchive } from "@/lib/archive-context";
 import { EmptyDrawer } from "@/components/archive-ui";
 import { PageHeader } from "@/components/page-header";
@@ -56,7 +57,9 @@ function MemoryBox() {
         </div>
 
         <div className="grid place-items-center gap-4 px-4 py-8">
-          <div className={`text-6xl transition-transform duration-300 ${isOpening ? "scale-125 rotate-6" : ""}`}>
+          <div
+            className={`text-6xl transition-transform duration-300 ${isOpening ? "scale-125 rotate-6" : ""}`}
+          >
             {open ? "📭" : "📦"}
           </div>
           <button
@@ -99,7 +102,8 @@ function MemoryBox() {
                 <p className="text-center text-xs text-muted-foreground">{picked.subtitle}</p>
               )}
               <p className="mt-1 text-center font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted-foreground">
-                {catMeta(picked.category).label} · {new Date(picked.createdAt).toLocaleDateString("pt-BR")}
+                {catMeta(picked.category).label} ·{" "}
+                {new Date(picked.createdAt).toLocaleDateString("pt-BR")}
               </p>
             </Link>
           </div>

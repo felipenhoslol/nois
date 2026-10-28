@@ -1,6 +1,23 @@
 import { useRef, useState } from "react";
 import { Field, inputClass } from "./archive-ui";
+import { toast } from "sonner";
+import { uploadMedia } from "@/lib/sync";
 import { extractYouTubeId, getYouTubeThumbnail } from "@/lib/youtube";
+
+const extOf = (file: File, fallback: string) =>
+  file.name.includes(".") ? file.name.split(".").pop()!.toLowerCase() : fallback;
+
+// Signed in: upload to Storage and hand back its URL. Otherwise keep the data URL (works offline).
+async function storeMedia(dataUrl: string, ext: string): Promise<string> {
+  try {
+    const blob = await (await fetch(dataUrl)).blob();
+    return (await uploadMedia(blob, ext)) ?? dataUrl;
+  } catch (err) {
+    console.warn("Media upload failed, keeping it on this device", err);
+    toast.error("não consegui enviar o arquivo, ele ficou só neste aparelho");
+    return dataUrl;
+  }
+}
 
 export function MediaPicker({
   imageUrl,
@@ -9,9 +26,9 @@ export function MediaPicker({
   onAudioChange,
   showAudio = false,
 }: {
-  imageUrl?: string;
+  imageUrl?: string | undefined;
   onImageChange: (url: string) => void;
-  audioUrl?: string;
+  audioUrl?: string | undefined;
   onAudioChange?: (url: string) => void;
   showAudio?: boolean;
 }) {
@@ -23,12 +40,16 @@ export function MediaPicker({
   // Check if current audio URL is a YouTube link
   const ytId = extractYouTubeId(audioUrl);
 
+  const finishImage = async (dataUrl: string, ext: string) => {
+    onImageChange(await storeMedia(dataUrl, ext));
+    setIsCompressing(false);
+  };
+
   // Process image or animated GIF file
   const processImageFile = (file: File) => {
     setIsCompressing(true);
 
-    const isGif =
-      file.type === "image/gif" || file.name.toLowerCase().endsWith(".gif");
+    const isGif = file.type === "image/gif" || file.name.toLowerCase().endsWith(".gif");
 
     const reader = new FileReader();
 
@@ -37,8 +58,7 @@ export function MediaPicker({
 
       // If it's an animated GIF, do NOT draw to Canvas (Canvas flattens GIFs to static JPEGs)
       if (isGif) {
-        onImageChange(src);
-        setIsCompressing(false);
+        void finishImage(src, "gif");
         return;
       }
 
@@ -67,17 +87,12 @@ export function MediaPicker({
         const ctx = canvas.getContext("2d");
         if (ctx) {
           ctx.drawImage(img, 0, 0, width, height);
-          const compressed = canvas.toDataURL("image/jpeg", 0.76);
-          onImageChange(compressed);
+          void finishImage(canvas.toDataURL("image/jpeg", 0.76), "jpg");
         } else {
-          onImageChange(src);
+          void finishImage(src, extOf(file, "jpg"));
         }
-        setIsCompressing(false);
       };
-      img.onerror = () => {
-        onImageChange(src);
-        setIsCompressing(false);
-      };
+      img.onerror = () => void finishImage(src, extOf(file, "jpg"));
       img.src = src;
     };
 
@@ -87,9 +102,10 @@ export function MediaPicker({
   const processAudioFile = (file: File) => {
     if (!onAudioChange) return;
     const reader = new FileReader();
-    reader.onload = (e) => {
-      const src = e.target?.result as string;
-      onAudioChange(src);
+    setIsCompressing(true);
+    reader.onload = async (e) => {
+      onAudioChange(await storeMedia(e.target?.result as string, extOf(file, "mp3")));
+      setIsCompressing(false);
     };
     reader.readAsDataURL(file);
   };
@@ -143,8 +159,8 @@ export function MediaPicker({
               {isCompressing
                 ? "Carregando mídia..."
                 : imageUrl
-                ? "🖼️ Alterar foto ou GIF de capa"
-                : "📷 Escolher foto ou GIF animado de capa"}
+                  ? "🖼️ Alterar foto ou GIF de capa"
+                  : "📷 Escolher foto ou GIF animado de capa"}
             </button>
             {imageUrl && (
               <button

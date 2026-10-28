@@ -11,5 +11,8 @@ process.stdin.on("end", () => {
   const root = process.env.CLAUDE_PROJECT_DIR || process.cwd();
   const cli = join(root, "node_modules", "prettier", "bin", "prettier.cjs");
   if (!existsSync(cli)) return;
-  spawnSync(process.execPath, [cli, "--write", "--ignore-unknown", file], { cwd: root, stdio: "ignore" });
+  spawnSync(process.execPath, [cli, "--write", "--ignore-unknown", file], {
+    cwd: root,
+    stdio: "ignore",
+  });
 });

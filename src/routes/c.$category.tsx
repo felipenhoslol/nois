@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { catMeta } from "@/lib/archive";
+import { catMeta } from "@/lib/categories";
 import { useArchive } from "@/lib/archive-context";
 import { usePlayer } from "@/lib/player-context";
-import { EmptyDrawer, ItemCard, SectionTitle } from "@/components/archive-ui";
+import { EmptyDrawer, ItemCard, ItemCardSkeleton, SectionTitle } from "@/components/archive-ui";
 import { PageHeader } from "@/components/page-header";
 import { Turntable } from "@/components/turntable";
 
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/c/$category")({
 function CategoryPage() {
   const { category } = Route.useParams();
   const meta = catMeta(category);
-  const { items } = useArchive();
+  const { items, ready } = useArchive();
   const { playTrack, currentTrack } = usePlayer();
   const [view, setView] = useState<"list" | "grid" | "cassette">("list");
   const [status, setStatus] = useState<string>("");
@@ -91,7 +91,9 @@ function CategoryPage() {
 
       {/* Items List / Grid / Cassette */}
       <div className="mt-4">
-        {list.length === 0 ? (
+        {!ready ? (
+          <ItemCardSkeleton count={4} />
+        ) : list.length === 0 ? (
           <EmptyDrawer text={meta.empty} kaomoji={meta.kaomoji} />
         ) : view === "list" ? (
           <div className="grid gap-2">
@@ -170,7 +172,9 @@ function CategoryPage() {
                 </div>
 
                 <div className="mt-2 flex items-center justify-between text-xs text-neutral-400">
-                  <span className="font-mono text-[0.6rem] truncate">{i.subtitle || "Sem detalhes"}</span>
+                  <span className="font-mono text-[0.6rem] truncate">
+                    {i.subtitle || "Sem detalhes"}
+                  </span>
                   <Link
                     to="/item/$id"
                     params={{ id: i.id }}
@@ -191,7 +195,7 @@ function CategoryPage() {
         <Link
           to="/new/$category"
           params={{ category: meta.key }}
-          className="press block rounded-[var(--radius)] bg-primary px-4 py-3 text-center font-medium text-primary-foreground shadow-md hover:brightness-105"
+          className="press btn-primary block"
         >
           + novo em {meta.label}
         </Link>

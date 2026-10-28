@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { catMeta, type Category } from "@/lib/archive";
+import { catMeta, type Category } from "@/lib/categories";
 import { useArchive } from "@/lib/archive-context";
 import { usePlayer } from "@/lib/player-context";
 import { Chip, Field, HeartButton, inputClass } from "@/components/archive-ui";
@@ -86,9 +86,7 @@ function ItemDetail() {
               alt={item.title}
               className="aspect-square w-full object-cover rounded-sm border border-border/40"
             />
-            <p className="mt-2 text-center font-hand text-base text-foreground">
-              {item.title} ♡
-            </p>
+            <p className="mt-2 text-center font-hand text-base text-foreground">{item.title} ♡</p>
             {item.subtitle && (
               <p className="text-center font-mono text-[0.62rem] text-muted-foreground truncate">
                 {item.subtitle}
@@ -226,7 +224,7 @@ function ItemDetail() {
             toast.success("Ideia de presente criada a partir deste comentário!");
             navigate({ to: "/item/$id", params: { id: gift.id } });
           }}
-          className="press mt-3 w-full rounded-[var(--radius)] bg-primary px-4 py-3 font-medium text-primary-foreground shadow cursor-pointer"
+          className="press btn-primary mt-3 w-full"
         >
           (づ｡◕‿◕｡)づ Transformar em ideia de presente
         </button>
