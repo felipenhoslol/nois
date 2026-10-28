@@ -1,4 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { openCommandPalette } from "./command-palette";
 
 const tabs = [
   { to: "/", label: "Início", icon: "⌂" },
@@ -38,6 +39,15 @@ export function SideNav() {
           );
         })}
       </nav>
+
+      <button
+        type="button"
+        onClick={openCommandPalette}
+        className="press mt-3 flex items-center justify-between rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground hover:text-foreground"
+      >
+        <span>procurar qualquer coisa</span>
+        <kbd className="font-mono text-[0.6rem]">Ctrl K</kbd>
+      </button>
 
       <Link
         to="/add"

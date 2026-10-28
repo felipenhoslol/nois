@@ -18,6 +18,7 @@ import { BottomNav } from "../components/bottom-nav";
 import { SideNav } from "../components/side-nav";
 import { MiniPlayer } from "../components/mini-player";
 import { Turntable } from "../components/turntable";
+import { CommandPalette } from "../components/command-palette";
 
 function NotFoundComponent() {
   return (
@@ -161,6 +162,8 @@ function RootComponent() {
 
             {/* Floating Mini-Player */}
             <MiniPlayer />
+
+            <CommandPalette />
 
             {/* Turntable Modal */}
             <TurntableModal />
