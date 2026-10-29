@@ -1,18 +1,19 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { CATEGORIES } from "@/lib/categories";
 import { useArchive } from "@/lib/archive-context";
-import { EmptyDrawer, ItemCard, SectionTitle } from "@/components/archive-ui";
+import { EmptyDrawer, SectionTitle } from "@/components/archive-ui";
+import { ItemRow } from "@/components/item-row";
 import { PageHeader } from "@/components/page-header";
 
 export const Route = createFileRoute("/favorites")({
   head: () => ({
     meta: [
-      { title: "♡ Favorites — Archive" },
+      { title: "Favoritos — Archive" },
       {
         name: "description",
         content: "As coisas mais importantes do arquivo, reunidas em um só lugar.",
       },
-      { property: "og:title", content: "♡ Favorites — Archive" },
+      { property: "og:title", content: "Favoritos — Archive" },
       { property: "og:description", content: "Os favoritos do seu arquivo pessoal." },
     ],
   }),
@@ -28,27 +29,34 @@ function Favorites() {
   })).filter((g) => g.list.length);
 
   return (
-    <main className="px-4 pt-6">
+    <main className="px-5 pt-6 pb-8">
       <PageHeader
-        title="♡ Favorites"
-        subtitle={`${favs.length} lembranças marcadas no coração`}
-        kaomoji="( ˘ ³˘)♥"
+        title="Favoritos"
+        subtitle={`${favs.length} ${favs.length === 1 ? "item marcado" : "itens marcados"}`}
         backTo="/"
-        backLabel="← arquivo"
+        backLabel="Início"
       />
 
-      <div className="mt-5 grid gap-5">
+      <div className="mt-5 grid gap-6">
         {grouped.length === 0 ? (
-          <EmptyDrawer text="Ainda não há nada com coração aqui ♡" kaomoji="( ˘ ³˘)♥" />
+          <EmptyDrawer
+            text="Ainda não há nada com coração aqui ♡"
+            kaomoji="( ˘ ³˘)♥"
+            action={
+              <Link to="/" className="press btn-primary">
+                Ver o arquivo
+              </Link>
+            }
+          />
         ) : (
           grouped.map((g) => (
             <section key={g.meta.key}>
               <SectionTitle>
-                {g.meta.emoji} {g.meta.label} · {g.meta.kaomoji}
+                {g.meta.emoji} {g.meta.label}
               </SectionTitle>
               <div className="grid gap-2">
-                {g.list.map((i, n) => (
-                  <ItemCard key={i.id} item={i} index={n} />
+                {g.list.map((i) => (
+                  <ItemRow key={i.id} item={i} />
                 ))}
               </div>
             </section>

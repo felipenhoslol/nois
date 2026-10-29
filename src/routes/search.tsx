@@ -1,25 +1,29 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { CATEGORIES, catMeta } from "@/lib/categories";
+import { CATEGORIES } from "@/lib/categories";
 import { useArchive } from "@/lib/archive-context";
 import { matchesQuery } from "@/lib/search";
-import { EmptyDrawer, ItemCard, SectionTitle, inputClass } from "@/components/archive-ui";
+import { EmptyDrawer, SectionTitle, inputClass } from "@/components/archive-ui";
+import { ItemRow } from "@/components/item-row";
 import { PageHeader } from "@/components/page-header";
 
 export const Route = createFileRoute("/search")({
   head: () => ({
     meta: [
-      { title: "Busca global — Archive" },
+      { title: "Procurar — Archive" },
       {
         name: "description",
         content: "Pesquise em todo o arquivo: roupas, marcas, presentes, memórias e comentários.",
       },
-      { property: "og:title", content: "Busca global — Archive" },
+      { property: "og:title", content: "Procurar — Archive" },
       { property: "og:description", content: "Encontre qualquer lembrança guardada." },
     ],
   }),
   component: SearchPage,
 });
+
+const chipClass = (on: boolean) =>
+  `press chip min-h-11 cursor-pointer ${on ? "border-primary bg-primary text-primary-foreground" : "bg-card"}`;
 
 function SearchPage() {
   const { items } = useArchive();
@@ -42,38 +46,41 @@ function SearchPage() {
     list: results.filter((i) => i.category === c.key),
   })).filter((g) => g.list.length);
 
+  const filtered = Boolean(q || cat || onlyFav);
+
   return (
-    <main className="px-4 pt-6">
+    <main className="px-5 pt-6 pb-8">
       <PageHeader
-        title="Busca no Arquivo"
-        subtitle="pesquise por palavras, tags ou gavetas"
-        kaomoji="( ⚆ _ ⚆ ) ✦"
+        title="Procurar"
+        subtitle="Palavras, tags ou gavetas"
         backTo="/"
-        backLabel="← arquivo"
+        backLabel="Início"
       />
 
       <input
-        className={`${inputClass} mt-1 text-base`}
+        type="search"
+        className={`${inputClass} min-h-[52px]`}
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="jaqueta, toca-discos, #nostalgia, jazz..."
+        placeholder="jaqueta, jazz, #nostalgia…"
+        aria-label="Procurar no arquivo"
         autoFocus
       />
 
-      <div className="mt-3 flex flex-wrap gap-1.5">
+      <div className="mt-3 flex flex-wrap gap-2">
         <button
           onClick={() => setOnlyFav((f) => !f)}
-          className={`press label-chip ${onlyFav ? "bg-primary text-primary-foreground" : "bg-card"}`}
+          aria-pressed={onlyFav}
+          className={chipClass(onlyFav)}
         >
-          ♡ favoritos
+          ♡ Favoritos
         </button>
         {CATEGORIES.map((c) => (
           <button
             key={c.key}
             onClick={() => setCat(c.key === cat ? "" : c.key)}
-            className={`press label-chip ${
-              c.key === cat ? "bg-primary text-primary-foreground" : "bg-card"
-            }`}
+            aria-pressed={c.key === cat}
+            className={chipClass(c.key === cat)}
           >
             {c.emoji} {c.label}
           </button>
@@ -81,32 +88,47 @@ function SearchPage() {
       </div>
 
       {allTags.length ? (
-        <div className="mt-3 flex flex-wrap gap-2 items-center">
-          <span className="font-mono text-[0.6rem] text-muted-foreground uppercase">Tags:</span>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <span className="text-sm text-muted-foreground">Tags</span>
           {allTags.map((t) => (
-            <button
-              key={t}
-              onClick={() => setQ(t)}
-              className="press font-hand text-base hover:text-primary transition-colors"
-            >
+            <button key={t} onClick={() => setQ(t)} className={chipClass(q === t)}>
               #{t}
             </button>
           ))}
         </div>
       ) : null}
 
-      <div className="mt-5 grid gap-5">
+      <div className="mt-5 grid gap-6">
         {grouped.length === 0 ? (
-          <EmptyDrawer text="Nada encontrado nesta gaveta ♡" kaomoji="( ｡•́‿•̀｡)" />
+          <EmptyDrawer
+            text="Nada encontrado."
+            kaomoji="( ｡•́‿•̀｡)"
+            action={
+              filtered ? (
+                <button
+                  onClick={() => {
+                    setQ("");
+                    setCat("");
+                    setOnlyFav(false);
+                  }}
+                  className="press btn-primary"
+                >
+                  Limpar filtros
+                </button>
+              ) : (
+                <span />
+              )
+            }
+          />
         ) : (
           grouped.map((g) => (
             <section key={g.meta.key}>
               <SectionTitle>
-                {catMeta(g.meta.key).emoji} {g.meta.label} · {g.list.length} item(ns)
+                {g.meta.emoji} {g.meta.label}
               </SectionTitle>
               <div className="grid gap-2">
-                {g.list.map((i, n) => (
-                  <ItemCard key={i.id} item={i} index={n} />
+                {g.list.map((i) => (
+                  <ItemRow key={i.id} item={i} />
                 ))}
               </div>
             </section>

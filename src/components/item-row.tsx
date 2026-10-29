@@ -23,7 +23,7 @@ export function ItemRow({ item }: { item: Item }) {
         {item.subtitle ? (
           <span className="block truncate text-sm text-muted-foreground">{item.subtitle}</span>
         ) : null}
-        <span className="mt-1 inline-block rounded-full border border-border px-2 text-[13px]">
+        <span className="mt-1 inline-block rounded-full border border-border px-2 py-0.5 text-[13px]">
           {meta.label}
         </span>
       </span>

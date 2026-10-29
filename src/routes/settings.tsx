@@ -125,7 +125,6 @@ function SettingsPage() {
       <PageHeader
         title="Configurações"
         subtitle="personalização, temas MySpace & dados"
-        kaomoji="( ⸝⸝•ᴗ•⸝⸝ )"
         backTo="/"
         backLabel="← arquivo"
       />
