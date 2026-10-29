@@ -7,10 +7,10 @@ export function MiniPlayer() {
 
   return (
     <aside
-      aria-label="Mini player"
-      className="fixed inset-x-0 bottom-[calc(76px+env(safe-area-inset-bottom))] z-40 mx-auto w-full max-w-[640px] px-5 md:bottom-6"
+      aria-label="Música tocando"
+      className="fixed inset-x-0 bottom-[calc(76px+env(safe-area-inset-bottom))] pointer-events-none z-40 mx-auto w-full max-w-[640px] px-5 md:bottom-6"
     >
-      <div className="relative flex items-center gap-3 overflow-hidden rounded-2xl border border-border bg-card p-2 shadow-lg">
+      <div className="pointer-events-auto relative flex items-center gap-3 overflow-hidden rounded-2xl border border-border bg-card p-2 shadow-lg">
         <button
           onClick={openTurntable}
           aria-label={`Abrir player: ${currentTrack.title}`}

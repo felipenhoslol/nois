@@ -23,16 +23,16 @@ export function BottomNav() {
         {NAV_ITEMS.map(({ to, label, icon: Icon, primary }) => {
           const active = pathname === to;
           return primary ? (
-            <div key={to} className="flex flex-col items-center gap-0.5">
-              <Link
-                to={asTo(to)}
-                aria-label={label}
-                className="press -mt-6 grid size-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-md"
-              >
+            <Link
+              key={to}
+              to={asTo(to)}
+              className="press flex flex-col items-center gap-0.5 text-muted-foreground"
+            >
+              <span className="-mt-6 grid size-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-md">
                 <Icon size={28} aria-hidden />
-              </Link>
-              <span className="text-[13px] leading-none text-muted-foreground">{label}</span>
-            </div>
+              </span>
+              <span className="text-[13px] leading-none">{label}</span>
+            </Link>
           ) : (
             <Link
               key={to}

@@ -13,8 +13,7 @@ export const Route = createFileRoute("/")({
       { title: "♡ My Archive — início" },
       {
         name: "description",
-        content:
-          "A página inicial do seu arquivo pessoal: contadores, favoritos e as últimas lembranças guardadas.",
+        content: "Busque no arquivo, adicione algo novo e veja o que vocês guardaram por último.",
       },
       { property: "og:title", content: "♡ My Archive — início" },
       {
