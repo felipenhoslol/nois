@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { expect, it } from "vitest";
+import { DEFAULT_SETTINGS } from "./settings";
 import {
   DEVICE_KEY,
   THEME_BOOT_SCRIPT,
@@ -45,4 +46,11 @@ it("boot script applies stored theme and migrates old names", () => {
   new Function(THEME_BOOT_SCRIPT)();
   expect(document.documentElement.dataset["theme"]).toBe("fita");
   expect(document.documentElement.dataset["anim"]).toBe("false");
+});
+
+it("fresh device with default settings seeds ceu", () => {
+  localStorage.clear();
+  expect(
+    loadDevicePrefs({ theme: DEFAULT_SETTINGS.theme, animations: DEFAULT_SETTINGS.animations }),
+  ).toEqual({ theme: "ceu", animations: true });
 });

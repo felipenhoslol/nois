@@ -27,7 +27,7 @@ export type Settings = {
 export const DEFAULT_SETTINGS: Settings = {
   archiveName: "My Archive",
   personName: "ele",
-  theme: "cassette",
+  theme: "ceu",
   animations: true,
   decorations: true,
   privacy: false,
