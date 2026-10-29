@@ -153,7 +153,7 @@ function RootComponent() {
             <SideNav />
 
             {/* Main Application Frame */}
-            <div className="grain flex-1 min-w-0 max-w-[640px] mx-auto px-5 pb-40">
+            <div className="flex-1 min-w-0 max-w-[640px] mx-auto px-5 pb-40">
               <Outlet />
             </div>
 

@@ -54,50 +54,6 @@
   }
 }
 
-@utility grain {
-  position: relative;
-  &::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 60;
-    opacity: var(--grain, 0.04);
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/></filter><rect width='120' height='120' filter='url(%23n)'/></svg>");
-  }
-}
-
-@utility label-chip {
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding: 0.15rem 0.45rem;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  color: var(--color-muted-foreground);
-}
-
-@utility card-object {
-  background: var(--color-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  box-shadow: 0 1px 0 color-mix(in oklab, var(--color-foreground) 8%, transparent);
-  transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease;
-  &:active {
-    transform: translateY(1px) scale(0.995);
-  }
-}
-
-@utility polaroid {
-  background: var(--color-paper);
-  padding: 0.5rem 0.5rem 1.6rem;
-  border: 1px solid var(--color-border);
-  box-shadow: 0 6px 18px -12px color-mix(in oklab, var(--color-foreground) 60%, transparent);
-}
-
 @utility press {
   transition:
     transform 0.12s ease,
@@ -105,46 +61,6 @@
   &:active {
     transform: translateY(2px) scale(0.97);
   }
-}
-
-@keyframes tape-slide {
-  from {
-    opacity: 0;
-    transform: translateY(10px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-@keyframes spin-disc {
-  to {
-    transform: rotate(360deg);
-  }
-}
-@keyframes box-open {
-  0% {
-    opacity: 0;
-    transform: rotateX(-70deg) translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@utility anim-in {
-  animation: tape-slide 0.32s cubic-bezier(0.2, 0.8, 0.3, 1) both;
-}
-@utility anim-box {
-  transform-origin: top center;
-  animation: box-open 0.45s cubic-bezier(0.2, 0.8, 0.3, 1) both;
-}
-@utility disc-spin {
-  animation: spin-disc 1.8s linear infinite;
-}
-@utility disc-spin-fast {
-  animation: spin-disc 1.33s linear infinite;
 }
 
 @keyframes vinyl-spin {

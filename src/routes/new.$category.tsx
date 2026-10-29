@@ -112,7 +112,7 @@ function NewItem() {
           </>
         )}
 
-        {/* Media Picker for visual photos / polaroids and audio */}
+        {/* Media Picker for visual photos and audio */}
         {meta.key !== "music" && <MediaPicker imageUrl={imageUrl} onImageChange={setImageUrl} />}
 
         {meta.statuses ? (
