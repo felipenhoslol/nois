@@ -224,7 +224,7 @@ function NewItem() {
                     key={n}
                     type="button"
                     onClick={() => setRating(n === rating ? 0 : n)}
-                    className={`press leading-none ${
+                    className={`press min-h-11 min-w-11 leading-none ${
                       n <= rating ? "text-primary" : "text-muted-foreground/40"
                     }`}
                     aria-label={`${n} estrelas`}
@@ -238,7 +238,7 @@ function NewItem() {
             <button
               type="button"
               onClick={() => setFavorite((f) => !f)}
-              className={`press card-object p-3 text-left text-sm flex items-center justify-between ${
+              className={`press surface-row text-left text-sm flex items-center justify-between ${
                 favorite ? "border-primary text-primary" : ""
               }`}
             >
