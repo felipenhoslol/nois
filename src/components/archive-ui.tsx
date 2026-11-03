@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { Lock, Users } from "lucide-react";
 import type { ReactNode } from "react";
 import type { Item } from "@/lib/items";
 import { useArchive } from "@/lib/archive-context";
@@ -78,6 +79,44 @@ export function ItemCardSkeleton({ count = 3 }: { count?: number }) {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+// "Quem vê": shared with both (default) or only me. Privacy is enforced by the database.
+export function VisibilityPicker({
+  onlyMe,
+  onChange,
+}: {
+  onlyMe: boolean;
+  onChange: (onlyMe: boolean) => void;
+}) {
+  const options = [
+    { value: false, label: "Nós dois", Icon: Users },
+    { value: true, label: "Só eu", Icon: Lock },
+  ];
+  return (
+    <div className="grid gap-1.5">
+      <span id="quem-ve" className="text-sm font-medium">
+        Quem vê
+      </span>
+      <div role="radiogroup" aria-labelledby="quem-ve" className="flex gap-1.5">
+        {options.map(({ value, label, Icon }) => (
+          <button
+            key={label}
+            type="button"
+            role="radio"
+            aria-checked={onlyMe === value}
+            onClick={() => onChange(value)}
+            className={`press chip min-h-11 inline-flex items-center gap-1.5 ${
+              onlyMe === value ? "bg-primary text-primary-foreground" : "bg-card"
+            }`}
+          >
+            <Icon className="size-4" aria-hidden />
+            {label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

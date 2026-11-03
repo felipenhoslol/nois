@@ -33,7 +33,7 @@ type Ctx = {
   settings: Settings;
   device: DevicePrefs;
   ready: boolean;
-  user: { email: string } | null;
+  user: { id: string; email: string } | null;
   addItem: (i: Omit<Item, "id" | "createdAt" | "favorite" | "tags"> & Partial<Item>) => Item;
   updateItem: (id: string, patch: Partial<Item>) => void;
   removeItem: (id: string) => void;
@@ -291,7 +291,7 @@ export function ArchiveProvider({ children }: { children: ReactNode }) {
       settings,
       device,
       ready,
-      user: session ? { email: session.email } : null,
+      user: session ? { id: session.id, email: session.email } : null,
       addItem,
       updateItem: (id, patch) =>
         setItems((prev) => prev.map((i) => (i.id === id ? { ...i, ...patch } : i))),

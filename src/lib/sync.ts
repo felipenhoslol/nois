@@ -148,24 +148,45 @@ export async function uploadMedia(file: Blob, ext: string): Promise<string | nul
 
 export async function fetchRemote(): Promise<{ items: Item[]; settings: Settings | null }> {
   const [items, settings] = await Promise.all([
-    supabase!.from("items").select("data"),
+    supabase!.from("items").select("data, owner_id, private"),
     supabase!.from("settings").select("data").eq("id", "shared").maybeSingle(),
   ]);
   if (items.error) throw items.error;
   if (settings.error) throw settings.error;
   return {
-    items: (items.data ?? []).map((r) => r.data as Item),
+    items: (items.data ?? []).map((r) => {
+      const item: Item = { ...(r.data as Item), private: r.private === true };
+      if (r.owner_id) item.ownerId = r.owner_id as string;
+      return item;
+    }),
     settings: (settings.data?.data as Settings | undefined) ?? null,
   };
 }
 
+const RLS_REFUSED = "42501";
+
 export async function upsertItems(userId: string, items: Item[]): Promise<void> {
   if (items.length === 0) return;
   const now = new Date().toISOString();
-  const { error } = await supabase!
-    .from("items")
-    .upsert(items.map((i) => ({ user_id: userId, id: i.id, data: i, updated_at: now })));
-  if (error) throw error;
+  const send = (batch: Item[]) =>
+    supabase!.from("items").upsert(
+      batch.map(({ ownerId: _owner, ...data }) => ({
+        user_id: userId,
+        id: data.id,
+        data,
+        private: data.private === true,
+        updated_at: now,
+      })),
+    );
+  const { error } = await send(items);
+  if (!error) return;
+  if (error.code !== RLS_REFUSED) throw error;
+  // Someone else made one of these items private: send one by one and drop only the refused
+  // ones (the next pull removes them here), so one item can't block the whole batch forever.
+  for (const item of items) {
+    const single = await send([item]);
+    if (single.error && single.error.code !== RLS_REFUSED) throw single.error;
+  }
 }
 
 export async function deleteRemoteItems(ids: string[]): Promise<void> {

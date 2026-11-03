@@ -18,7 +18,13 @@ export type Item = {
   image?: string | undefined;
   audioUrl?: string | undefined;
   coverStyle?: "vinyl" | "cassette" | "cd" | "polaroid" | undefined;
+  private?: boolean | undefined; // true = only the owner sees it (enforced by the database)
+  ownerId?: string | undefined; // set by the database; absent until the item is synced
 };
+
+// Items not synced yet have no owner: they were made on this device, so they're mine.
+export const isMine = (item: Item, userId: string | null | undefined): boolean =>
+  !item.ownerId || item.ownerId === userId;
 
 export const ITEMS_KEY = "archive.items.v1";
 

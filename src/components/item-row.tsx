@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Pause, Play } from "lucide-react";
+import { Pause, Play, Lock } from "lucide-react";
 import { catMeta } from "@/lib/categories";
 import type { Item } from "@/lib/items";
 import { usePlayer } from "@/lib/player-context";
@@ -48,6 +48,13 @@ export function ItemRow({ item }: { item: Item }) {
         <span className="mt-1 inline-block rounded-full border border-border px-2 py-0.5 text-[13px]">
           {meta.label}
         </span>
+        {item.private && (
+          <Lock
+            className="ml-1.5 inline size-3.5 align-[-2px] text-muted-foreground"
+            aria-label="Só você vê"
+            role="img"
+          />
+        )}
       </span>
       {item.category === "music" && (item.audioUrl || item.link) ? (
         <PlayButton item={item} />
