@@ -5,7 +5,8 @@ import { toast } from "sonner";
 import { catMeta, type Category } from "@/lib/categories";
 import { useArchive } from "@/lib/archive-context";
 import { usePlayer } from "@/lib/player-context";
-import { Field, inputClass } from "@/components/archive-ui";
+import { Field, inputClass, VisibilityPicker } from "@/components/archive-ui";
+import { isMine } from "@/lib/items";
 import { MediaPicker } from "@/components/media-picker";
 import { PageHeader } from "@/components/page-header";
 
@@ -26,7 +27,7 @@ const actionClass =
 
 function ItemDetail() {
   const { id } = Route.useParams();
-  const { items, updateItem, removeItem, addItem, toggleFavorite, ready } = useArchive();
+  const { items, updateItem, removeItem, addItem, toggleFavorite, ready, user } = useArchive();
   const { playTrack, openTurntable, currentTrack, isPlaying } = usePlayer();
   const navigate = useNavigate();
   const [showMediaEditor, setShowMediaEditor] = useState(false);
@@ -124,6 +125,16 @@ function ItemDetail() {
           Apagar
         </button>
       </div>
+
+      {/* Only the person who saved it decides who sees it. */}
+      {isMine(item, user?.id) && (
+        <div className="mt-4">
+          <VisibilityPicker
+            onlyMe={item.private === true}
+            onChange={(onlyMe) => updateItem(item.id, { private: onlyMe || undefined })}
+          />
+        </div>
+      )}
 
       {showMediaEditor && (
         <div className="mt-4">

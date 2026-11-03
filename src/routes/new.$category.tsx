@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { catMeta, DATE_PLACE_CATEGORIES, type Category } from "@/lib/categories";
 import { parseTags } from "@/lib/items";
 import { useArchive } from "@/lib/archive-context";
-import { Field, inputClass } from "@/components/archive-ui";
+import { Field, inputClass, VisibilityPicker } from "@/components/archive-ui";
 import { MediaPicker } from "@/components/media-picker";
 import { MusicPicker } from "@/components/music-picker";
 import type { TrackResult } from "@/lib/music-search";
@@ -37,6 +37,7 @@ function NewItem() {
   const [date, setDate] = useState("");
   const [place, setPlace] = useState("");
   const [favorite, setFavorite] = useState(false);
+  const [onlyMe, setOnlyMe] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
   const [audioUrl, setAudioUrl] = useState("");
   const [link, setLink] = useState("");
@@ -63,6 +64,7 @@ function NewItem() {
       audioUrl: audioUrl || picked?.previewUrl || undefined,
       link: (picked ? picked.link : link) || undefined,
       tags: parseTags(tags),
+      private: onlyMe || undefined,
     });
     toast.success(`Guardado na gaveta de ${meta.label} ♡`);
     navigate({ to: "/item/$id", params: { id: item.id } });
@@ -133,6 +135,8 @@ function NewItem() {
             </div>
           </Field>
         ) : null}
+
+        <VisibilityPicker onlyMe={onlyMe} onChange={setOnlyMe} />
 
         <details className="surface-row p-4">
           <summary className="min-h-11 cursor-pointer text-base font-medium">Mais detalhes</summary>

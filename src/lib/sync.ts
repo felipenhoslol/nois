@@ -148,13 +148,17 @@ export async function uploadMedia(file: Blob, ext: string): Promise<string | nul
 
 export async function fetchRemote(): Promise<{ items: Item[]; settings: Settings | null }> {
   const [items, settings] = await Promise.all([
-    supabase!.from("items").select("data"),
+    supabase!.from("items").select("data, owner_id, private"),
     supabase!.from("settings").select("data").eq("id", "shared").maybeSingle(),
   ]);
   if (items.error) throw items.error;
   if (settings.error) throw settings.error;
   return {
-    items: (items.data ?? []).map((r) => r.data as Item),
+    items: (items.data ?? []).map((r) => {
+      const item: Item = { ...(r.data as Item), private: r.private === true };
+      if (r.owner_id) item.ownerId = r.owner_id as string;
+      return item;
+    }),
     settings: (settings.data?.data as Settings | undefined) ?? null,
   };
 }
@@ -162,9 +166,15 @@ export async function fetchRemote(): Promise<{ items: Item[]; settings: Settings
 export async function upsertItems(userId: string, items: Item[]): Promise<void> {
   if (items.length === 0) return;
   const now = new Date().toISOString();
-  const { error } = await supabase!
-    .from("items")
-    .upsert(items.map((i) => ({ user_id: userId, id: i.id, data: i, updated_at: now })));
+  const { error } = await supabase!.from("items").upsert(
+    items.map(({ ownerId: _owner, ...data }) => ({
+      user_id: userId,
+      id: data.id,
+      data,
+      private: data.private === true,
+      updated_at: now,
+    })),
+  );
   if (error) throw error;
 }
 

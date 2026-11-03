@@ -108,7 +108,7 @@ it("on sign-in merges cloud items without uploading seeds, then debounces edits"
   });
   expect(ctx.items.map((i) => i.id)).toEqual(["r1"]);
   expect(sync.upsertItems).toHaveBeenCalledWith("u1", []);
-  expect(ctx.user).toEqual({ email: "a@b.c" });
+  expect(ctx.user).toEqual({ id: "u1", email: "a@b.c" });
 
   sync.upsertItems.mockClear();
   await act(async () => {
