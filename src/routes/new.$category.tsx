@@ -59,8 +59,8 @@ function NewItem() {
       date: date || undefined,
       place: place.trim() || undefined,
       favorite,
-      image: (picked ? picked.artwork : imageUrl) || undefined,
-      audioUrl: (picked ? picked.previewUrl : audioUrl) || undefined,
+      image: imageUrl || picked?.artwork || undefined,
+      audioUrl: audioUrl || picked?.previewUrl || undefined,
       link: (picked ? picked.link : link) || undefined,
       tags: parseTags(tags),
     });
