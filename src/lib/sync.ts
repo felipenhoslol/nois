@@ -163,19 +163,30 @@ export async function fetchRemote(): Promise<{ items: Item[]; settings: Settings
   };
 }
 
+const RLS_REFUSED = "42501";
+
 export async function upsertItems(userId: string, items: Item[]): Promise<void> {
   if (items.length === 0) return;
   const now = new Date().toISOString();
-  const { error } = await supabase!.from("items").upsert(
-    items.map(({ ownerId: _owner, ...data }) => ({
-      user_id: userId,
-      id: data.id,
-      data,
-      private: data.private === true,
-      updated_at: now,
-    })),
-  );
-  if (error) throw error;
+  const send = (batch: Item[]) =>
+    supabase!.from("items").upsert(
+      batch.map(({ ownerId: _owner, ...data }) => ({
+        user_id: userId,
+        id: data.id,
+        data,
+        private: data.private === true,
+        updated_at: now,
+      })),
+    );
+  const { error } = await send(items);
+  if (!error) return;
+  if (error.code !== RLS_REFUSED) throw error;
+  // Someone else made one of these items private: send one by one and drop only the refused
+  // ones (the next pull removes them here), so one item can't block the whole batch forever.
+  for (const item of items) {
+    const single = await send([item]);
+    if (single.error && single.error.code !== RLS_REFUSED) throw single.error;
+  }
 }
 
 export async function deleteRemoteItems(ids: string[]): Promise<void> {

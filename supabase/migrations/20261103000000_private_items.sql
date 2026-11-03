@@ -34,3 +34,21 @@ end;
 $$;
 create trigger keep_item_owner before insert or update on public.items
   for each row execute function public.keep_item_owner();
+
+-- Media: each person can list/remove only their own folder, so the partner can't browse
+-- the photos/audio of "Só eu" items. Shared items still show their photos: <img src>
+-- uses the public URL stored in the item, which needs no listing permission.
+drop policy "members read media" on storage.objects;
+drop policy "members delete media" on storage.objects;
+create policy "members read own media" on storage.objects for select to authenticated
+  using (
+    bucket_id = 'media'
+    and public.is_member()
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+create policy "members delete own media" on storage.objects for delete to authenticated
+  using (
+    bucket_id = 'media'
+    and public.is_member()
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
