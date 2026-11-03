@@ -175,3 +175,16 @@ it("two YouTube taps during the load play only the latest video", async () => {
   expect(fakes.ytPlayer.loadVideoById).not.toHaveBeenCalledWith("dQw4w9WgXcQ");
   expect(fakes.ytPlayer.playVideo).toHaveBeenCalled();
 });
+
+it("a Spotify script that fails to load stops the disc and lets a later tap retry", async () => {
+  const { loadSpotifyIframeApi } = await import("./spotify");
+  vi.mocked(loadSpotifyIframeApi).mockRejectedValueOnce(new Error("blocked"));
+  await mount();
+  await act(async () => ctx.playTrack(sp));
+  await flush();
+  expect(ctx.isPlaying).toBe(false);
+  await act(async () => ctx.playTrack(sp));
+  await flush();
+  expect(loadSpotifyIframeApi).toHaveBeenCalledTimes(2);
+  expect(fakes.createController).toHaveBeenCalled();
+});

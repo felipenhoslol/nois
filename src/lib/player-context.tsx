@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { toast } from "sonner";
 import { useArchive } from "./archive-context";
 import type { Item } from "./items";
 import { spotifyTrackId } from "./music-link";
@@ -255,7 +256,17 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
     if (spotifyInitRef.current) return; // controller on its way; it picks up spotifyUriRef
     spotifyInitRef.current = true;
-    const api = await loadSpotifyIframeApi();
+    let api;
+    try {
+      api = await loadSpotifyIframeApi();
+    } catch {
+      spotifyInitRef.current = false;
+      if (sourceRef.current === "spotify") {
+        setIsPlaying(false);
+        toast.error("Não consegui abrir o Spotify agora");
+      }
+      return;
+    }
     const el = document.getElementById("archive-spotify-player");
     if (!el) {
       spotifyInitRef.current = false;

@@ -34,12 +34,25 @@ let apiPromise: Promise<SpotifyIFrameAPI> | null = null;
 
 export function loadSpotifyIframeApi(): Promise<SpotifyIFrameAPI> {
   if (apiPromise) return apiPromise;
-  apiPromise = new Promise((resolve) => {
-    window.onSpotifyIframeApiReady = resolve;
+  apiPromise = new Promise<SpotifyIFrameAPI>((resolve, reject) => {
+    // Blocked or offline: fail instead of hanging, so the player can stop and retry later.
+    const timer = window.setTimeout(() => reject(new Error("Spotify API timeout")), 10_000);
+    window.onSpotifyIframeApiReady = (api) => {
+      window.clearTimeout(timer);
+      resolve(api);
+    };
     const tag = document.createElement("script");
     tag.src = "https://open.spotify.com/embed/iframe-api/v1";
     tag.async = true;
+    tag.onerror = () => {
+      window.clearTimeout(timer);
+      tag.remove();
+      reject(new Error("Spotify API failed to load"));
+    };
     document.body.appendChild(tag);
+  }).catch((err: unknown) => {
+    apiPromise = null;
+    throw err;
   });
   return apiPromise;
 }
