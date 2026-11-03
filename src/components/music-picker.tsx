@@ -79,6 +79,7 @@ export function MusicPicker({ onPick }: { onPick: (t: TrackResult) => void }) {
           <Cover src={chosen.artwork} size="h-16 w-16" />
           <div className="grid min-w-0 flex-1 gap-2">
             <input
+              autoFocus
               className={inputClass}
               value={chosen.title}
               onChange={(e) => setChosen({ ...chosen, title: e.target.value })}
