@@ -7,24 +7,24 @@ import { Field, SectionTitle, inputClass } from "./archive-ui";
 export function SyncSection() {
   const { user, ready } = useArchive();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
 
-  async function sendLink(e: React.FormEvent) {
+  // Sign-in only: the two accounts are created in the Supabase dashboard; there is no sign-up here.
+  async function signIn(e: React.FormEvent) {
     e.preventDefault();
-    if (!supabase || !email.trim()) return;
+    if (!supabase || !email.trim() || !password) return;
     setSending(true);
-    const { error } = await supabase.auth.signInWithOtp({
+    const { error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
-      // Only the two existing accounts can sign in; the link never creates a new one.
-      options: { emailRedirectTo: `${window.location.origin}/settings`, shouldCreateUser: false },
+      password,
     });
     setSending(false);
     if (error) {
-      toast.error("Esse e-mail não tem acesso a este arquivo. Confere se digitou certo ♡");
+      toast.error("E-mail ou senha incorretos.");
       return;
     }
-    setSent(true);
+    setPassword("");
   }
 
   return (
@@ -51,13 +51,9 @@ export function SyncSection() {
             Sair
           </button>
         </div>
-      ) : sent ? (
-        <p className="surface-row text-sm">
-          Link enviado para <b>{email}</b>. Abra o e-mail neste aparelho para entrar ♡
-        </p>
       ) : (
-        <form onSubmit={sendLink} className="surface-row grid gap-3">
-          <Field label="Seu e-mail">
+        <form onSubmit={signIn} className="surface-row grid gap-3">
+          <Field label="E-mail">
             <input
               type="email"
               required
@@ -68,12 +64,21 @@ export function SyncSection() {
               placeholder="voce@email.com"
             />
           </Field>
+          <Field label="Senha">
+            <input
+              type="password"
+              required
+              autoComplete="current-password"
+              className={inputClass}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </Field>
           <button type="submit" disabled={sending} className="press btn-primary">
-            {sending ? "Enviando…" : "Receber link de acesso"}
+            {sending ? "Entrando…" : "Entrar"}
           </button>
           <p className="text-xs text-muted-foreground">
-            Sem senha: você recebe um link por e-mail. O arquivo é de vocês dois e aparece em todos
-            os aparelhos.
+            O arquivo é de vocês dois e aparece em todos os aparelhos em que vocês entrarem.
           </p>
         </form>
       )}

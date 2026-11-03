@@ -1353,6 +1353,6 @@ O arquivo é um só, compartilhado por duas pessoas:
 1. Rode as migrações de `supabase/migrations/` em ordem no SQL Editor.
 2. Cadastre os dois e-mails que podem entrar:
    `insert into public.members (email) values ('voce@exemplo.com'), ('ela@exemplo.com');`
-3. Em Authentication → Users → Add user, crie os dois usuários com esses e-mails.
+3. Em Authentication → Users → Add user → Create new user, crie os dois usuários com esses e-mails e uma senha para cada um (marque "Auto Confirm User"). Para trocar uma senha depois, use o mesmo painel.
 4. Em Authentication → Sign In / Providers, desligue "Allow new users to sign up", mantenha "Confirm email" ligado e deixe só o provedor Email ativo.
-5. Em Authentication → URL Configuration, coloque o endereço da Vercel em Site URL e em Redirect URLs.
+5. O login é por e-mail e senha na tela de Ajustes; não há cadastro pelo site.
