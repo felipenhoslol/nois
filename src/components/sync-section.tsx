@@ -28,37 +28,35 @@ export function SyncSection() {
   }
 
   return (
-    <section className="mt-6 grid gap-2">
-      <SectionTitle>sincronizar na nuvem</SectionTitle>
+    <section className="grid gap-3">
+      <SectionTitle>Sincronizar na nuvem</SectionTitle>
       {!ready ? (
         // Server has no Supabase client; wait for the browser before choosing a view.
-        <p className="card-object p-3 text-sm text-muted-foreground">carregando…</p>
+        <p className="surface-row text-sm text-muted-foreground">Carregando…</p>
       ) : !supabase ? (
-        <p className="card-object p-3 text-sm text-muted-foreground">
+        <p className="surface-row text-sm text-muted-foreground">
           Sincronização não configurada. O arquivo continua guardado só neste aparelho ♡
         </p>
       ) : user ? (
-        <div className="card-object flex items-center justify-between gap-3 p-3 text-sm">
+        <div className="surface-row flex items-center justify-between gap-3 text-sm">
           <span className="min-w-0">
-            <span className="block">sincronizado ♡</span>
-            <span className="block truncate font-mono text-xs text-muted-foreground">
-              {user.email}
-            </span>
+            <span className="block">Sincronizado</span>
+            <span className="block truncate text-xs text-muted-foreground">{user.email}</span>
           </span>
           <button
             type="button"
             onClick={() => void supabase!.auth.signOut()}
-            className="press label-chip bg-card"
+            className="press chip min-h-11 bg-card cursor-pointer"
           >
-            sair
+            Sair
           </button>
         </div>
       ) : sent ? (
-        <p className="card-object p-3 text-sm">
+        <p className="surface-row text-sm">
           Link enviado para <b>{email}</b>. Abra o e-mail neste aparelho para entrar ♡
         </p>
       ) : (
-        <form onSubmit={sendLink} className="card-object grid gap-2 p-3">
+        <form onSubmit={sendLink} className="surface-row grid gap-3">
           <Field label="Seu e-mail">
             <input
               type="email"
@@ -70,8 +68,8 @@ export function SyncSection() {
               placeholder="voce@email.com"
             />
           </Field>
-          <button type="submit" disabled={sending} className="press btn-primary text-sm">
-            {sending ? "enviando…" : "receber link de acesso"}
+          <button type="submit" disabled={sending} className="press btn-primary">
+            {sending ? "Enviando…" : "Receber link de acesso"}
           </button>
           <p className="text-xs text-muted-foreground">
             Sem senha: você recebe um link por e-mail. O arquivo é de vocês dois e aparece em todos

@@ -11,20 +11,22 @@ import {
 import type { ReactNode } from "react";
 import { Toaster } from "sonner";
 
+import { themeCss } from "../lib/themes";
+import { THEME_BOOT_SCRIPT } from "../lib/device";
 import appCss from "../styles.css?url";
 import { ArchiveProvider } from "../lib/archive-context";
 import { PlayerProvider, usePlayer } from "../lib/player-context";
 import { BottomNav } from "../components/bottom-nav";
 import { SideNav } from "../components/side-nav";
 import { MiniPlayer } from "../components/mini-player";
-import { Turntable } from "../components/turntable";
+import { Player } from "../components/player";
 import { CommandPalette } from "../components/command-palette";
 
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="font-mono text-6xl font-bold text-foreground">404</h1>
+        <h1 className="text-6xl font-bold text-foreground">404</h1>
         <h2 className="mt-4 text-xl font-semibold">Gaveta não encontrada</h2>
         <p className="mt-2 text-sm text-muted-foreground">Essa página não existe neste arquivo.</p>
         <div className="mt-6">
@@ -92,7 +94,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&family=Caveat:wght@500;600&family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=VT323&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap",
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
@@ -105,8 +107,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR" data-theme="cassette" data-anim="true">
+    <html lang="pt-BR" data-theme="ceu" data-anim="true" suppressHydrationWarning>
       <head>
+        <style dangerouslySetInnerHTML={{ __html: themeCss() }} />
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <HeadContent />
       </head>
       <body>
@@ -117,14 +121,21 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
-function TurntableModal() {
+function PlayerModal() {
   const { isTurntableOpen, closeTurntable } = usePlayer();
   if (!isTurntableOpen) return null;
 
+  // No enter animation: the Spotify embed is laid over a slot measured on mount.
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm anim-box">
-      <div className="w-full max-w-lg">
-        <Turntable onClose={closeTurntable} />
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Player"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4"
+      onClick={(e) => e.target === e.currentTarget && closeTurntable()}
+    >
+      <div className="my-auto w-full max-w-[400px]">
+        <Player onClose={closeTurntable} />
       </div>
     </div>
   );
@@ -142,7 +153,7 @@ function RootComponent() {
             <SideNav />
 
             {/* Main Application Frame */}
-            <div className="grain flex-1 min-w-0 max-w-xl mx-auto pb-28">
+            <div className="flex-1 min-w-0 max-w-[640px] mx-auto px-5 pb-40">
               <Outlet />
             </div>
 
@@ -154,8 +165,7 @@ function RootComponent() {
 
             <CommandPalette />
 
-            {/* Turntable Modal */}
-            <TurntableModal />
+            <PlayerModal />
 
             {/* Toast Notifications */}
             <Toaster position="top-center" />
@@ -175,6 +185,12 @@ function RootComponent() {
               aria-hidden="true"
             >
               <div id="archive-yt-player" />
+            </div>
+
+            {/* Persistent Spotify embed: never unmounted or moved (that reloads the iframe).
+                The big player shows it by flipping data-visible; position lives in styles.css. */}
+            <div id="archive-spotify-player-container" data-visible="false" aria-hidden="true">
+              <div id="archive-spotify-player" />
             </div>
           </div>
         </PlayerProvider>

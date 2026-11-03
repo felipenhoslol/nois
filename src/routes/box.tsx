@@ -1,20 +1,21 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { catMeta } from "@/lib/categories";
 import type { Item } from "@/lib/items";
 import { useArchive } from "@/lib/archive-context";
 import { EmptyDrawer } from "@/components/archive-ui";
+import { ItemRow } from "@/components/item-row";
 import { PageHeader } from "@/components/page-header";
 
 export const Route = createFileRoute("/box")({
   head: () => ({
     meta: [
-      { title: "Memory Box — Archive" },
+      { title: "Lembranças — Archive" },
       {
         name: "description",
         content: "Abra a caixa de lembranças e tire uma memória aleatória do arquivo.",
       },
-      { property: "og:title", content: "Memory Box — Archive" },
+      { property: "og:title", content: "Lembranças — Archive" },
       { property: "og:description", content: "Uma caixa antiga cheia de pequenas lembranças." },
     ],
   }),
@@ -41,74 +42,39 @@ function MemoryBox() {
   }
 
   return (
-    <main className="px-4 pt-6">
+    <main className="px-5 pt-6 pb-8">
       <PageHeader
-        title="Memory Box"
-        subtitle="uma caixa antiga com pedacinhos guardados"
-        kaomoji="(づ๑•ᴗ•๑)づ ✦"
+        title="Lembranças"
+        subtitle={`${items.length} ${items.length === 1 ? "item guardado" : "itens guardados"}`}
         backTo="/"
-        backLabel="← arquivo"
+        backLabel="Início"
       />
 
-      <div className="card-object mt-4 overflow-hidden bg-secondary/60 border-2 border-border/80">
-        <div className="border-b border-border px-4 py-3 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-between">
-          <span>caixa nº 01 · {items.length} lembranças</span>
-          <span>(｡♥‿♥｡)</span>
-        </div>
-
-        <div className="grid place-items-center gap-4 px-4 py-8">
+      {items.length === 0 ? (
+        <EmptyDrawer text="A caixa ainda está vazia ♡" kaomoji="( ˘ ³˘)♥" />
+      ) : (
+        <div className="surface-row grid place-items-center gap-4 py-8">
           <div
-            className={`text-6xl transition-transform duration-300 ${isOpening ? "scale-125 rotate-6" : ""}`}
+            className={`text-6xl transition-transform duration-300 ${isOpening ? "scale-110" : ""}`}
+            aria-hidden
           >
             {open ? "📭" : "📦"}
           </div>
-          <button
-            onClick={surprise}
-            disabled={isOpening || items.length === 0}
-            className="press rounded-full bg-primary px-7 py-3 font-mono text-sm font-bold text-primary-foreground shadow-lg hover:brightness-110 disabled:opacity-50"
-          >
-            {isOpening ? "Abrindo a caixa..." : "Surprise me ♡"}
+          <button onClick={surprise} disabled={isOpening} className="press btn-primary">
+            {isOpening ? "Abrindo…" : "Tirar uma lembrança"}
           </button>
         </div>
-      </div>
+      )}
 
-      <div className="mt-6">
-        {items.length === 0 ? (
-          <EmptyDrawer text="A caixa ainda está vazia ♡" kaomoji="( ˘ ³˘)♥" />
-        ) : picked && open ? (
-          <div className="space-y-2">
-            <p className="text-center font-mono text-[0.62rem] uppercase tracking-[0.2em] text-muted-foreground">
-              ✦ Você retirou da caixa ✦
-            </p>
-            <Link
-              to="/item/$id"
-              params={{ id: picked.id }}
-              key={picked.id}
-              className="polaroid anim-box block rotate-[-1.5deg] max-w-sm mx-auto shadow-xl hover:rotate-0 transition-transform"
-            >
-              {picked.image ? (
-                <img
-                  src={picked.image}
-                  alt={picked.title}
-                  className="aspect-[4/3] w-full object-cover rounded-sm border border-border/40"
-                />
-              ) : (
-                <div className="grid aspect-[4/3] place-items-center bg-secondary text-5xl">
-                  {catMeta(picked.category).emoji}
-                </div>
-              )}
-              <p className="mt-2 text-center font-hand text-2xl font-bold">{picked.title}</p>
-              {picked.subtitle && (
-                <p className="text-center text-xs text-muted-foreground">{picked.subtitle}</p>
-              )}
-              <p className="mt-1 text-center font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted-foreground">
-                {catMeta(picked.category).label} ·{" "}
-                {new Date(picked.createdAt).toLocaleDateString("pt-BR")}
-              </p>
-            </Link>
-          </div>
-        ) : null}
-      </div>
+      {picked && open ? (
+        <div className="mt-6" key={picked.id}>
+          <p className="mb-2 text-base text-muted-foreground">
+            Da gaveta {catMeta(picked.category).label}, guardado em{" "}
+            {new Date(picked.createdAt).toLocaleDateString("pt-BR")}
+          </p>
+          <ItemRow item={picked} />
+        </div>
+      ) : null}
     </main>
   );
 }

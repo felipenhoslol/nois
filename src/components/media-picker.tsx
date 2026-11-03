@@ -111,29 +111,31 @@ export function MediaPicker({
   };
 
   return (
-    <div className="card-object p-4 space-y-3 bg-secondary/40 border border-border/80">
+    <div className="surface-row space-y-3 !p-4">
       <div className="flex items-center justify-between">
-        <span className="font-mono text-[0.65rem] uppercase tracking-[0.16em] text-muted-foreground flex items-center gap-1.5">
-          <span>( ˘ ³˘)♥</span> Capa & Música
-        </span>
-        <div className="flex gap-1 bg-card rounded-md p-0.5 border border-border">
+        <span className="text-sm font-medium text-muted-foreground">Capa e música</span>
+        <div className="flex gap-1">
           <button
             type="button"
             onClick={() => setTab("file")}
-            className={`press px-2.5 py-0.5 text-[0.65rem] font-mono rounded cursor-pointer ${
-              tab === "file" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+            className={`press chip min-h-11 cursor-pointer ${
+              tab === "file"
+                ? "bg-primary text-primary-foreground border-primary"
+                : "text-muted-foreground"
             }`}
           >
-            Arquivo / GIF
+            Arquivo ou GIF
           </button>
           <button
             type="button"
             onClick={() => setTab("url")}
-            className={`press px-2.5 py-0.5 text-[0.65rem] font-mono rounded cursor-pointer ${
-              tab === "url" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+            className={`press chip min-h-11 cursor-pointer ${
+              tab === "url"
+                ? "bg-primary text-primary-foreground border-primary"
+                : "text-muted-foreground"
             }`}
           >
-            Link URL / YouTube
+            Link ou YouTube
           </button>
         </div>
       </div>
@@ -154,19 +156,19 @@ export function MediaPicker({
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="press flex-1 rounded-[var(--radius-sm)] border border-dashed border-border bg-paper px-3 py-2.5 text-xs font-mono text-center hover:bg-muted cursor-pointer"
+              className="press btn-ghost min-h-11 flex-1 border-dashed text-center"
             >
               {isCompressing
-                ? "Carregando mídia..."
+                ? "Carregando..."
                 : imageUrl
-                  ? "🖼️ Alterar foto ou GIF de capa"
-                  : "📷 Escolher foto ou GIF animado de capa"}
+                  ? "Alterar foto ou GIF de capa"
+                  : "Escolher foto ou GIF animado de capa"}
             </button>
             {imageUrl && (
               <button
                 type="button"
                 onClick={() => onImageChange("")}
-                className="press rounded-md border border-border px-2.5 py-2.5 text-xs text-destructive hover:bg-destructive/10 cursor-pointer"
+                className="press btn-ghost min-h-11 min-w-11 text-destructive"
                 title="Remover capa"
               >
                 ✕
@@ -190,17 +192,17 @@ export function MediaPicker({
                 <button
                   type="button"
                   onClick={() => audioInputRef.current?.click()}
-                  className="press flex-1 rounded-[var(--radius-sm)] border border-dashed border-border bg-paper px-3 py-2.5 text-xs font-mono text-center hover:bg-muted cursor-pointer"
+                  className="press btn-ghost min-h-11 flex-1 border-dashed text-center"
                 >
                   {audioUrl && !ytId
-                    ? "🎵 Arquivo de áudio anexado (alterar)"
-                    : "🎵 Enviar áudio local (MP3, WAV...)"}
+                    ? "Áudio anexado (alterar)"
+                    : "Enviar áudio do aparelho (MP3, WAV...)"}
                 </button>
                 {audioUrl && (
                   <button
                     type="button"
                     onClick={() => onAudioChange("")}
-                    className="press rounded-md border border-border px-2.5 py-2.5 text-xs text-destructive hover:bg-destructive/10 cursor-pointer"
+                    className="press btn-ghost min-h-11 min-w-11 text-destructive"
                     title="Remover áudio"
                   >
                     ✕
@@ -212,7 +214,7 @@ export function MediaPicker({
         </div>
       ) : (
         <div className="space-y-3">
-          <Field label="URL da Imagem ou GIF">
+          <Field label="URL da imagem ou GIF">
             <input
               className={inputClass}
               value={imageUrl ?? ""}
@@ -223,7 +225,7 @@ export function MediaPicker({
 
           {showAudio && onAudioChange && (
             <div className="space-y-2">
-              <Field label="Link da Música (YouTube ou Áudio Web)">
+              <Field label="Link da música (YouTube ou áudio na web)">
                 <input
                   className={inputClass}
                   value={audioUrl ?? ""}
@@ -234,16 +236,14 @@ export function MediaPicker({
 
               {/* Quick YouTube Thumbnail helper */}
               {ytId && (
-                <div className="flex items-center justify-between rounded-md bg-secondary/80 px-3 py-2 border border-border">
-                  <span className="text-xs font-mono text-foreground flex items-center gap-1.5">
-                    <span className="text-red-500">▶</span> Vídeo do YouTube detectado!
-                  </span>
+                <div className="surface-row flex items-center justify-between gap-2">
+                  <span className="text-sm text-foreground">Vídeo do YouTube detectado</span>
                   <button
                     type="button"
                     onClick={() => onImageChange(getYouTubeThumbnail(ytId, "hq"))}
-                    className="press label-chip bg-primary text-primary-foreground text-[0.62rem] font-mono cursor-pointer"
+                    className="press chip min-h-11 bg-primary text-primary-foreground border-primary cursor-pointer"
                   >
-                    ✦ Usar Capa do YouTube
+                    Usar capa do YouTube
                   </button>
                 </div>
               )}
@@ -255,15 +255,13 @@ export function MediaPicker({
       {/* Live Cover Preview (Supports GIFs and Photos) */}
       {imageUrl && (
         <div className="flex flex-col items-center pt-2">
-          <div className="polaroid max-w-[200px] w-full rotate-1 shadow-lg bg-card">
+          <div className="w-full max-w-[200px] rounded-2xl border border-border bg-card p-2">
             <img
               src={imageUrl}
               alt="Pré-visualização da capa"
-              className="aspect-square w-full object-cover rounded-sm border border-border/40"
+              className="aspect-square w-full object-cover rounded-xl"
             />
-            <p className="mt-1.5 text-center font-hand text-xs text-muted-foreground">
-              capa do arquivo (˶ᵔ ᵕ ᵔ˶)
-            </p>
+            <p className="mt-1.5 text-center text-xs text-muted-foreground">Capa do arquivo</p>
           </div>
         </div>
       )}

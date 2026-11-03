@@ -1,13 +1,13 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { catMeta, DATE_PLACE_CATEGORIES, type Category } from "@/lib/categories";
 import { parseTags } from "@/lib/items";
 import { useArchive } from "@/lib/archive-context";
 import { Field, inputClass } from "@/components/archive-ui";
-import { PageHeader } from "@/components/page-header";
 import { MediaPicker } from "@/components/media-picker";
-import { MusicSearch } from "@/components/music-search";
+import { MusicPicker } from "@/components/music-picker";
+import type { TrackResult } from "@/lib/music-search";
 
 export const Route = createFileRoute("/new/$category")({
   head: () => ({
@@ -41,16 +41,17 @@ function NewItem() {
   const [audioUrl, setAudioUrl] = useState("");
   const [link, setLink] = useState("");
 
-  function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!title.trim()) {
+  // `picked` lets "Guardar música" save right away, before the state updates above land.
+  function save(picked?: TrackResult) {
+    const title_ = picked ? picked.title : title;
+    if (!title_.trim()) {
       toast.error("Por favor, preencha o título antes de guardar.");
       return;
     }
     const item = addItem({
       category: meta.key as Category,
-      title: title.trim(),
-      subtitle: subtitle.trim() || undefined,
+      title: title_.trim(),
+      subtitle: (picked ? picked.artist : subtitle).trim() || undefined,
       notes: notes.trim() || undefined,
       reason: reason.trim() || undefined,
       status: status || undefined,
@@ -58,69 +59,61 @@ function NewItem() {
       date: date || undefined,
       place: place.trim() || undefined,
       favorite,
-      image: imageUrl || undefined,
-      audioUrl: audioUrl || undefined,
-      link: link || undefined,
+      image: imageUrl || picked?.artwork || undefined,
+      audioUrl: audioUrl || picked?.previewUrl || undefined,
+      link: (picked ? picked.link : link) || undefined,
       tags: parseTags(tags),
     });
     toast.success(`Guardado na gaveta de ${meta.label} ♡`);
     navigate({ to: "/item/$id", params: { id: item.id } });
   }
 
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    save();
+  }
+
   return (
     <main className="px-4 pt-6">
-      <PageHeader
-        title={
-          <span className="flex items-center gap-2">
-            <span>{meta.emoji}</span> Novo em {meta.label}
-          </span>
-        }
-        subtitle="adicione este pedacinho ao arquivo"
-        kaomoji={meta.kaomoji}
-        backTo={`/c/${meta.key}`}
-        backLabel={`← ${meta.label}`}
-      />
+      <Link
+        to="/c/$category"
+        params={{ category: meta.key }}
+        className="text-sm text-muted-foreground"
+      >
+        ← {meta.label}
+      </Link>
+      <h1 className="mt-2 text-3xl font-bold">
+        {meta.emoji} Novo em {meta.label}
+      </h1>
 
-      <form onSubmit={submit} className="anim-in mt-3 grid gap-3">
-        {meta.key === "music" && (
-          <MusicSearch
-            onPick={(t) => {
-              setTitle(t.title);
-              setSubtitle([t.artist, t.album].filter(Boolean).join(" · "));
-              setImageUrl(t.artwork ?? "");
-              setAudioUrl(t.previewUrl ?? "");
-              setLink(t.link ?? "");
-            }}
-          />
+      <form onSubmit={submit} className="mt-4 grid gap-4">
+        {meta.key === "music" && <MusicPicker onPick={save} />}
+
+        {meta.key !== "music" && (
+          <>
+            <Field label="Título">
+              <input
+                autoFocus
+                className={inputClass}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="o que você quer guardar?"
+              />
+            </Field>
+
+            <Field label={meta.fields?.[0]?.label ?? "Detalhe"}>
+              <input
+                className={inputClass}
+                value={subtitle}
+                onChange={(e) => setSubtitle(e.target.value)}
+                placeholder="autor, marca ou complemento"
+              />
+            </Field>
+          </>
         )}
 
-        <Field label="Título">
-          <input
-            autoFocus
-            className={inputClass}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="o que você quer guardar?"
-          />
-        </Field>
-
-        <Field label={meta.fields?.[0]?.label ?? "Detalhe"}>
-          <input
-            className={inputClass}
-            value={subtitle}
-            onChange={(e) => setSubtitle(e.target.value)}
-            placeholder="autor, marca ou complemento"
-          />
-        </Field>
-
-        {/* Media Picker for visual photos / polaroids and audio */}
-        <MediaPicker
-          imageUrl={imageUrl}
-          onImageChange={setImageUrl}
-          audioUrl={audioUrl}
-          onAudioChange={setAudioUrl}
-          showAudio={meta.key === "music"}
-        />
+        {/* Media Picker for visual photos and audio */}
+        {meta.key !== "music" && <MediaPicker imageUrl={imageUrl} onImageChange={setImageUrl} />}
 
         {meta.statuses ? (
           <Field label="Status">
@@ -130,7 +123,7 @@ function NewItem() {
                   key={s}
                   type="button"
                   onClick={() => setStatus(s === status ? "" : s)}
-                  className={`press label-chip ${
+                  className={`press chip min-h-11 ${
                     s === status ? "bg-primary text-primary-foreground" : "bg-card"
                   }`}
                 >
@@ -141,88 +134,131 @@ function NewItem() {
           </Field>
         ) : null}
 
-        {DATE_PLACE_CATEGORIES.includes(meta.key) ? (
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Data">
-              <input
-                type="date"
+        <details className="surface-row p-4">
+          <summary className="min-h-11 cursor-pointer text-base font-medium">Mais detalhes</summary>
+          <div className="mt-3 grid gap-4">
+            {meta.key === "music" ? (
+              <>
+                <Field label="Título">
+                  <input
+                    className={inputClass}
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="o que você quer guardar?"
+                  />
+                </Field>
+
+                <Field label={meta.fields?.[0]?.label ?? "Detalhe"}>
+                  <input
+                    className={inputClass}
+                    value={subtitle}
+                    onChange={(e) => setSubtitle(e.target.value)}
+                    placeholder="autor, marca ou complemento"
+                  />
+                </Field>
+
+                <MediaPicker
+                  imageUrl={imageUrl}
+                  onImageChange={setImageUrl}
+                  audioUrl={audioUrl}
+                  onAudioChange={setAudioUrl}
+                  showAudio
+                />
+              </>
+            ) : null}
+
+            {DATE_PLACE_CATEGORIES.includes(meta.key) ? (
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Data">
+                  <input
+                    type="date"
+                    className={inputClass}
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                  />
+                </Field>
+                <Field label="Lugar">
+                  <input
+                    className={inputClass}
+                    value={place}
+                    onChange={(e) => setPlace(e.target.value)}
+                    placeholder="onde aconteceu?"
+                  />
+                </Field>
+              </div>
+            ) : null}
+
+            <Field label="Por que ele gosta / por que importa">
+              <textarea
+                rows={2}
                 className={inputClass}
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="o motivo ou a história por trás..."
               />
             </Field>
-            <Field label="Lugar">
-              <input
+
+            <Field label="Observações">
+              <textarea
+                rows={3}
                 className={inputClass}
-                value={place}
-                onChange={(e) => setPlace(e.target.value)}
-                placeholder="onde aconteceu?"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="pequenos detalhes, comentários ou lembretes..."
               />
             </Field>
-          </div>
-        ) : null}
 
-        <Field label="Por que ele gosta / por que importa">
-          <textarea
-            rows={2}
-            className={inputClass}
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="o motivo ou a história por trás..."
-          />
-        </Field>
+            <Field label="Tags">
+              <input
+                className={inputClass}
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="#nostalgia #presentes #verão"
+              />
+            </Field>
 
-        <Field label="Observações">
-          <textarea
-            rows={3}
-            className={inputClass}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="pequenos detalhes, comentários ou lembretes..."
-          />
-        </Field>
+            <Field label="Nota de afeição">
+              <div className="flex gap-1 text-2xl">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setRating(n === rating ? 0 : n)}
+                    className={`press min-h-11 min-w-11 leading-none ${
+                      n <= rating ? "text-primary" : "text-muted-foreground/40"
+                    }`}
+                    aria-label={`${n} estrelas`}
+                  >
+                    ★
+                  </button>
+                ))}
+              </div>
+            </Field>
 
-        <Field label="Tags">
-          <input
-            className={inputClass}
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-            placeholder="#nostalgia #presentes #verão"
-          />
-        </Field>
+            <button
+              type="button"
+              onClick={() => setFavorite((f) => !f)}
+              className={`press surface-row text-left text-sm flex items-center justify-between ${
+                favorite ? "border-primary text-primary" : ""
+              }`}
+            >
+              <span>{favorite ? "♥ marcado como favorito" : "♡ marcar como favorito"}</span>
+              <span className="text-base">{favorite ? "★" : "☆"}</span>
+            </button>
 
-        <Field label="Nota de afeição">
-          <div className="flex gap-1 text-2xl">
-            {[1, 2, 3, 4, 5].map((n) => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => setRating(n === rating ? 0 : n)}
-                className={`press leading-none ${
-                  n <= rating ? "text-primary" : "text-muted-foreground/40"
-                }`}
-                aria-label={`${n} estrelas`}
-              >
-                ★
+            {meta.key === "music" && (
+              <button type="submit" className="press btn-primary">
+                Guardar no arquivo ♡
               </button>
-            ))}
+            )}
           </div>
-        </Field>
+        </details>
 
-        <button
-          type="button"
-          onClick={() => setFavorite((f) => !f)}
-          className={`press card-object p-3 text-left text-sm flex items-center justify-between ${
-            favorite ? "border-primary text-primary" : ""
-          }`}
-        >
-          <span>{favorite ? "♥ marcado como favorito" : "♡ marcar como favorito"}</span>
-          <span className="text-base">{favorite ? "★" : "☆"}</span>
-        </button>
-
-        <button type="submit" className="press btn-primary mt-2">
-          Guardar no arquivo ♡
-        </button>
+        {meta.key !== "music" && (
+          <button type="submit" className="press btn-primary mt-2">
+            Guardar no arquivo ♡
+          </button>
+        )}
       </form>
     </main>
   );

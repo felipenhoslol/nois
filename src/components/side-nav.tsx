@@ -1,42 +1,32 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { openCommandPalette } from "./command-palette";
+import { NAV_ITEMS, asTo } from "./bottom-nav";
 import { useArchive } from "@/lib/archive-context";
-
-const tabs = [
-  { to: "/", label: "Início", icon: "⌂" },
-  { to: "/search", label: "Buscar", icon: "⌕" },
-  { to: "/favorites", label: "Favoritos", icon: "♡" },
-  { to: "/box", label: "Lembranças", icon: "✦" },
-  { to: "/settings", label: "Ajustes", icon: "⚙" },
-] as const;
 
 export function SideNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user } = useArchive();
   return (
-    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-border bg-paper/70 px-4 py-8 md:flex">
-      <div className="px-2">
-        <p className="font-mono text-[0.6rem] uppercase tracking-[0.3em] text-muted-foreground">
-          Arquivo pessoal
-        </p>
-        <h2 className="mt-1 text-2xl font-bold tracking-tight">Archive</h2>
-      </div>
+    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-border bg-paper px-4 py-8 md:flex">
+      <h2 className="px-2 text-2xl font-bold">Archive</h2>
 
-      <nav className="mt-8 flex flex-col gap-1">
-        {tabs.map((t) => {
-          const active = pathname === t.to;
+      <nav aria-label="Principal" className="mt-8 flex flex-col gap-1">
+        {NAV_ITEMS.map(({ to, label, icon: Icon, primary }) => {
+          const active = pathname === to;
           return (
             <Link
-              key={t.to}
-              to={t.to}
-              className={`press flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                active
-                  ? "bg-primary/15 text-primary"
-                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+              key={to}
+              to={asTo(to)}
+              className={`press flex h-12 items-center gap-3 rounded-2xl px-3 text-base font-medium ${
+                primary
+                  ? "bg-primary text-primary-foreground"
+                  : active
+                    ? "bg-primary/15 text-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
-              <span className="text-lg leading-none">{t.icon}</span>
-              <span className="font-medium">{t.label}</span>
+              <Icon size={24} aria-hidden />
+              {label}
             </Link>
           );
         })}
@@ -45,21 +35,14 @@ export function SideNav() {
       <button
         type="button"
         onClick={openCommandPalette}
-        className="press mt-3 flex items-center justify-between rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground hover:text-foreground"
+        className="press mt-3 flex h-12 items-center justify-between rounded-2xl border border-dashed border-border px-3 text-sm text-muted-foreground hover:text-foreground"
       >
-        <span>procurar qualquer coisa</span>
-        <kbd className="font-mono text-[0.6rem]">Ctrl K</kbd>
+        <span>Procurar</span>
+        <kbd className="text-sm">Ctrl K</kbd>
       </button>
 
-      <Link
-        to="/add"
-        className="press mt-6 flex items-center justify-center gap-2 rounded-full border border-border bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground"
-      >
-        <span className="text-lg leading-none">+</span> Novo registro
-      </Link>
-
-      <p className="mt-auto px-2 font-mono text-[0.55rem] uppercase tracking-[0.2em] text-muted-foreground">
-        {user ? "sincronizado na nuvem ♡" : "guardado no seu aparelho"}
+      <p className="mt-auto px-2 text-sm text-muted-foreground">
+        {user ? "Sincronizado na nuvem ♡" : "Guardado no seu aparelho"}
       </p>
     </aside>
   );

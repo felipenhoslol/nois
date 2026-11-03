@@ -224,3 +224,12 @@ it("coming back to the tab pulls what the other person changed", async () => {
   });
   expect(ctx.items.map((i) => i.id)).toEqual(["r2", "r1"]);
 });
+
+it("an old MySpace custom theme (useCustomTheme) opens in noite", async () => {
+  localStorage.setItem(
+    "archive.settings.v1",
+    JSON.stringify({ theme: "cassette", useCustomTheme: true }),
+  );
+  await mount();
+  expect(ctx.device.theme).toBe("noite");
+});

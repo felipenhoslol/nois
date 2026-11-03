@@ -1,14 +1,3 @@
-export const THEMES = [
-  { key: "cassette", label: "Cassete Vintage" },
-  { key: "hifi", label: "Hi-Fi Retro" },
-  { key: "soft", label: "Soft Retro" },
-  { key: "computer", label: "Retro Computer" },
-  { key: "vhs", label: "VHS" },
-  { key: "darkvintage", label: "Dark Vintage" },
-  { key: "y2k", label: "Y2K Retro" },
-  { key: "cozy", label: "Cozy Diary" },
-];
-
 export type CustomTheme = {
   primary: string;
   secondary?: string;
@@ -38,7 +27,7 @@ export type Settings = {
 export const DEFAULT_SETTINGS: Settings = {
   archiveName: "My Archive",
   personName: "ele",
-  theme: "cassette",
+  theme: "ceu",
   animations: true,
   decorations: true,
   privacy: false,
