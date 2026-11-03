@@ -47,6 +47,11 @@ type Ctx = {
 const ArchiveContext = createContext<Ctx | null>(null);
 
 const cloudError = () => toast.error("não consegui salvar na nuvem, ficou guardado aqui ♡");
+// The database refused some items (e.g. the other person made them private): say so, don't hide it.
+const warnRefused = (refused: string[] | undefined) => {
+  if (refused?.length)
+    toast.error("Algumas mudanças não foram aceitas pela nuvem e foram desfeitas.");
+};
 const byId = (list: Item[]) => new Map(list.map((i) => [i.id, i]));
 const without = (list: string[], ids: Iterable<string>) => {
   const drop = new Set(ids);
@@ -115,7 +120,7 @@ export function ArchiveProvider({ children }: { children: ReactNode }) {
       const { merged, toUpload, toDelete } = mergeItems(local, remote.items, st);
       syncedItems.current = byId(merged);
       setItems(merged);
-      await upsertItems(userId, toUpload);
+      warnRefused(await upsertItems(userId, toUpload));
       await deleteRemoteItems(toDelete);
       if (currentUser !== userId) return;
       updateSyncState((x) => ({
@@ -171,10 +176,12 @@ export function ArchiveProvider({ children }: { children: ReactNode }) {
       saveSyncState(syncState.current);
 
       upserter.current = createDebouncedUpserter(async (batch) => {
-        await upsertItems(userId, batch).catch((e: unknown) => {
-          cloudError();
-          throw e;
-        });
+        warnRefused(
+          await upsertItems(userId, batch).catch((e: unknown) => {
+            cloudError();
+            throw e;
+          }),
+        );
         // Clean only items that weren't edited again while the request was in flight.
         const current = byId(itemsRef.current);
         const done = batch.filter((i) => current.get(i.id) === i).map((i) => i.id);
