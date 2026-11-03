@@ -81,7 +81,9 @@ export function ArchiveProvider({ children }: { children: ReactNode }) {
     setItems(hasStoredItems() ? loadItems() : seedItems());
     const s = loadSettings();
     setSettings(s);
-    setDevice(loadDevicePrefs({ theme: s.theme, animations: s.animations }));
+    setDevice(
+      loadDevicePrefs({ theme: s.useCustomTheme ? "custom" : s.theme, animations: s.animations }),
+    );
     setReady(true);
   }, []);
 
