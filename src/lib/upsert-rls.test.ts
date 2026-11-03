@@ -35,7 +35,7 @@ it("an item the partner made private doesn't block the rest of the batch", async
   const { upsertItems } = await import("./sync");
   // batch refused by RLS, then one by one: a ok, b refused (now private to the partner)
   answers.queue = [{ error: { code: "42501" } }, { error: null }, { error: { code: "42501" } }];
-  await expect(upsertItems("u1", [mk("a"), mk("b")])).resolves.toBeUndefined();
+  await expect(upsertItems("u1", [mk("a"), mk("b")])).resolves.toEqual(["b"]);
   expect(answers.calls).toEqual([["a", "b"], ["a"], ["b"]]);
 });
 
@@ -43,4 +43,11 @@ it("other errors (offline etc.) still fail so the batch stays queued", async () 
   const { upsertItems } = await import("./sync");
   answers.queue = [{ error: { code: "PGRST000" } }];
   await expect(upsertItems("u1", [mk("a"), mk("b")])).rejects.toBeTruthy();
+});
+
+it("before the migration runs (no private column), uploads still go through", async () => {
+  const { upsertItems } = await import("./sync");
+  answers.queue = [{ error: { code: "PGRST204" } }, { error: null }];
+  await expect(upsertItems("u1", [mk("a")])).resolves.toEqual([]);
+  expect(answers.calls).toEqual([["a"], ["a"]]);
 });

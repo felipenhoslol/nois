@@ -127,7 +127,7 @@ function ItemDetail() {
       </div>
 
       {/* Only the person who saved it decides who sees it. */}
-      {isMine(item, user?.id) && (
+      {(!user || isMine(item, user.id)) && (
         <div className="mt-4">
           <VisibilityPicker
             onlyMe={item.private === true}
@@ -182,6 +182,7 @@ function ItemDetail() {
           onClick={() => {
             const gift = addItem({
               category: "gift" as Category,
+              private: item.private, // a gift made from a private note stays private
               title: item.title,
               subtitle: "vindo de um comentário dele",
               status: "ideia",

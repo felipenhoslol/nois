@@ -146,47 +146,67 @@ export async function uploadMedia(file: Blob, ext: string): Promise<string | nul
 
 // --- Cloud calls. Only used with a signed-in session; RLS limits every query to that user. ---
 
+// Rows created before the owner column (or by an admin) have no owner: shared, never "mine".
+const NO_OWNER = "none";
+
 export async function fetchRemote(): Promise<{ items: Item[]; settings: Settings | null }> {
-  const [items, settings] = await Promise.all([
+  const [first, settings] = await Promise.all([
     supabase!.from("items").select("data, owner_id, private"),
     supabase!.from("settings").select("data").eq("id", "shared").maybeSingle(),
   ]);
+  // shortcut: database not migrated yet (no owner/private columns) → read items as all shared.
+  // Remove once 20261103000000_private_items.sql has run everywhere.
+  const items =
+    first.error?.code === "42703" ? await supabase!.from("items").select("data") : first;
   if (items.error) throw items.error;
   if (settings.error) throw settings.error;
   return {
-    items: (items.data ?? []).map((r) => {
-      const item: Item = { ...(r.data as Item), private: r.private === true };
-      if (r.owner_id) item.ownerId = r.owner_id as string;
-      return item;
-    }),
+    items: (items.data ?? []).map(
+      (r: { data: unknown; owner_id?: string | null; private?: boolean }) => {
+        const item: Item = { ...(r.data as Item), private: r.private === true };
+        if ("owner_id" in r) item.ownerId = r.owner_id ?? NO_OWNER;
+        return item;
+      },
+    ),
     settings: (settings.data?.data as Settings | undefined) ?? null,
   };
 }
 
 const RLS_REFUSED = "42501";
 
-export async function upsertItems(userId: string, items: Item[]): Promise<void> {
-  if (items.length === 0) return;
+/** Uploads items; returns the ids the database refused (e.g. the partner made them private). */
+export async function upsertItems(userId: string, items: Item[]): Promise<string[]> {
+  if (items.length === 0) return [];
   const now = new Date().toISOString();
+  let withPrivateColumn = true;
   const send = (batch: Item[]) =>
     supabase!.from("items").upsert(
-      batch.map(({ ownerId: _owner, ...data }) => ({
+      // The private flag lives only in its column (source of truth); owner is set by the database.
+      batch.map(({ ownerId: _owner, private: isPrivate, ...data }) => ({
         user_id: userId,
         id: data.id,
         data,
-        private: data.private === true,
+        ...(withPrivateColumn ? { private: isPrivate === true } : {}),
         updated_at: now,
       })),
     );
-  const { error } = await send(items);
-  if (!error) return;
-  if (error.code !== RLS_REFUSED) throw error;
-  // Someone else made one of these items private: send one by one and drop only the refused
-  // ones (the next pull removes them here), so one item can't block the whole batch forever.
-  for (const item of items) {
-    const single = await send([item]);
-    if (single.error && single.error.code !== RLS_REFUSED) throw single.error;
+  let { error } = await send(items);
+  // shortcut: database not migrated yet (no `private` column) → upload as shared, like fetchRemote.
+  if (error?.code === "PGRST204") {
+    withPrivateColumn = false;
+    ({ error } = await send(items));
   }
+  if (!error) return [];
+  if (error.code !== RLS_REFUSED) throw error;
+  // One refused item must not block the whole batch forever: retry each, report the refused.
+  const results = await Promise.all(items.map((item) => send([item])));
+  const refused: string[] = [];
+  results.forEach((r, i) => {
+    if (!r.error) return;
+    if (r.error.code !== RLS_REFUSED) throw r.error;
+    refused.push(items[i]!.id);
+  });
+  return refused;
 }
 
 export async function deleteRemoteItems(ids: string[]): Promise<void> {

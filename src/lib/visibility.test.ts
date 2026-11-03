@@ -1,7 +1,7 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import type { Item } from "./items";
 
-const db = vi.hoisted(() => ({ upsert: vi.fn(), rows: [] as unknown[] }));
+const db = vi.hoisted(() => ({ upsert: vi.fn(), rows: [] as unknown[], missingColumns: false }));
 vi.mock("./supabase", () => ({
   supabase: {
     from: (table: string) => ({
@@ -9,9 +9,13 @@ vi.mock("./supabase", () => ({
         db.upsert(table, rows);
         return Promise.resolve({ error: null });
       },
-      select: () =>
+      select: (cols: string) =>
         table === "items"
-          ? Promise.resolve({ data: db.rows, error: null })
+          ? Promise.resolve(
+              db.missingColumns && cols.includes("owner_id")
+                ? { data: null, error: { code: "42703" } }
+                : { data: db.rows, error: null },
+            )
           : { eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }) },
     }),
   },
@@ -29,6 +33,7 @@ const base: Item = {
 beforeEach(() => {
   db.upsert.mockReset();
   db.rows = [];
+  db.missingColumns = false;
 });
 
 it("upload sends the private flag as a column and keeps ownerId out of the stored data", async () => {
@@ -38,6 +43,7 @@ it("upload sends the private flag as a column and keeps ownerId out of the store
   expect(table).toBe("items");
   expect(rows[0]).toMatchObject({ id: "a", user_id: "u1", private: true });
   expect(rows[0].data).not.toHaveProperty("ownerId");
+  expect(rows[0].data).not.toHaveProperty("private"); // the column is the only copy
   expect(rows[0]).not.toHaveProperty("owner_id"); // the database sets the owner, never the client
 });
 
@@ -60,4 +66,21 @@ it("isMine: items without owner (made here, not synced yet) or owned by me", asy
   expect(isMine({ ...base, ownerId: "u1" }, "u1")).toBe(true);
   expect(isMine({ ...base, ownerId: "u2" }, "u1")).toBe(false);
   expect(isMine({ ...base, ownerId: "u2" }, null)).toBe(false);
+});
+
+it("a row with no owner is shared and never 'mine', so nobody gets the picker for it", async () => {
+  db.rows = [{ data: base, owner_id: null, private: false }];
+  const { fetchRemote } = await import("./sync");
+  const { isMine } = await import("./items");
+  const { items } = await fetchRemote();
+  expect(isMine(items[0]!, "u1")).toBe(false);
+});
+
+it("before the migration runs, items still load (all shared)", async () => {
+  db.missingColumns = true;
+  db.rows = [{ data: base }];
+  const { fetchRemote } = await import("./sync");
+  const { items } = await fetchRemote();
+  expect(items.map((i) => i.id)).toEqual(["a"]);
+  expect(items[0]!.private).toBe(false);
 });
