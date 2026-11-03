@@ -1,7 +1,29 @@
 import { Link } from "@tanstack/react-router";
+import { Pause, Play } from "lucide-react";
 import { catMeta } from "@/lib/categories";
 import type { Item } from "@/lib/items";
+import { usePlayer } from "@/lib/player-context";
 import { HeartButton } from "@/components/archive-ui";
+
+function PlayButton({ item }: { item: Item }) {
+  const { playTrack, togglePlay, currentTrack, isPlaying } = usePlayer();
+  const current = currentTrack?.id === item.id;
+  const playing = current && isPlaying;
+  return (
+    <button
+      aria-label={playing ? "Pausar" : `Tocar ${item.title}`}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (current) togglePlay();
+        else playTrack(item);
+      }}
+      className="press -my-2.5 grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground"
+    >
+      {playing ? <Pause size={18} /> : <Play size={18} className="ml-0.5" />}
+    </button>
+  );
+}
 
 export function ItemRow({ item }: { item: Item }) {
   const meta = catMeta(item.category);
@@ -27,6 +49,9 @@ export function ItemRow({ item }: { item: Item }) {
           {meta.label}
         </span>
       </span>
+      {item.category === "music" && (item.audioUrl || item.link) ? (
+        <PlayButton item={item} />
+      ) : null}
       <HeartButton item={item} />
     </Link>
   );
